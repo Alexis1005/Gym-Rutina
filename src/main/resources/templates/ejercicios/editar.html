@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Editar Ejercicio</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Editar Ejercicio</h1>
+
+    <form th:action="@{/ejercicios/{id}(id=${id})}" th:object="${ejercicioDTO}" method="post" class="mt-4">
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombre" th:field="*{nombre}">
+            <small class="text-danger" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></small>
+        </div>
+
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcion" th:field="*{descripcion}"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="grupoMuscularId" class="form-label">Grupo Muscular</label>
+            <select class="form-control" id="grupoMuscularId" th:field="*{grupoMuscularId}">
+                <option th:each="grupo : ${gruposMusculares}"
+                        th:value="${grupo.id}"
+                        th:text="${grupo.nombre}"></option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-success">Actualizar</button>
+        <a href="/ejercicios" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+</body>
+</html>

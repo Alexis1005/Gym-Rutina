@@ -18,8 +18,9 @@ public class GrupoMuscular {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column(name="id")
     private Long id;
+    @Column(name = "nombre", nullable = false, unique = true)
     private String nombre;
 
-    @OneToMany(mappedBy = "grupoMuscular", cascade = CascadeType.ALL, orphanRemoval = false)
-    private List<Ejercicio> ejercicio;
+    @OneToMany(mappedBy = "grupoMuscular", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Ejercicio> ejercicios;
 }

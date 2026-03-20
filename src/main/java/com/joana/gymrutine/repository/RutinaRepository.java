@@ -1,0 +1,7 @@
+package com.joana.gymrutine.repository;
+
+import com.joana.gymrutine.model.Rutina;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface RutinaRepository extends JpaRepository<Rutina, Long> {
+}
