@@ -3,6 +3,7 @@ package com.joana.gymrutine.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -22,6 +23,6 @@ public class Bloque {
     @OneToMany(mappedBy = "bloque", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RutinaBloque> rutinaBloques;
 
-    @OneToMany(mappedBy = "bloque", cascade = CascadeType.ALL, orphanRemoval = false)
-    private List<BloqueEjercicio>  bloqueEjercicio;
+    @OneToMany(mappedBy = "bloque", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BloqueEjercicio>  bloqueEjercicio = new ArrayList<>();
 }

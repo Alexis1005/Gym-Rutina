@@ -2,6 +2,7 @@ package com.joana.gymrutine.service;
 
 import com.joana.gymrutine.dto.ejercicio.EjercicioActualizarDTO;
 import com.joana.gymrutine.dto.ejercicio.EjercicioCrearDTO;
+import com.joana.gymrutine.dto.ejercicio.EjercicioResponseDTO;
 import com.joana.gymrutine.model.Ejercicio;
 import com.joana.gymrutine.repository.EjercicioRepository;
 import jakarta.transaction.Transactional;
@@ -40,6 +41,22 @@ public class EjercicioService {
     }
 
     //-----------------------------------------------------
+
+    public List<EjercicioResponseDTO> listarDTO(){
+        return ejercicioRepository.findAll().stream()
+                .map(e -> {
+                    EjercicioResponseDTO dto = new EjercicioResponseDTO();
+                    dto.setId(e.getId());
+                    dto.setNombre(e.getNombre());
+                    dto.setDescripcion(e.getDescripcion());
+                    dto.setGrupoMuscularNombre(e.getGrupoMuscular().getNombre());
+                    dto.setGrupoMuscularId(e.getGrupoMuscular().getId());
+                    return dto;
+                })
+                .toList();
+    }
+
+    //-----------------------------------------------------
     public Ejercicio listarPorId(Long id) {
 
         if (id == null || id <= 0) {
@@ -58,6 +75,15 @@ public class EjercicioService {
 
         return ejercicioRepository.findByNombre(nombre)
                 .orElseThrow(() -> new IllegalArgumentException("El nombre del ejercicio no existe."));
+    }
+
+    //-----------------------------------------------------
+    public List<Ejercicio> listarPorGrupo(Long grupoId) {
+        if (grupoId == null || grupoId <= 0) {
+            throw new IllegalArgumentException("Id invalido");
+        }
+        var ejercicios = ejercicioRepository.findAllByGrupoMuscularId(grupoId);
+        return ejercicios;
     }
 
     //-----------------------------------------------------
@@ -82,7 +108,7 @@ public class EjercicioService {
     //-----------------------------------------------------
     public void eliminar(Long id) {
 
-        var  ejercicio = ejercicioRepository.findById(id);
+        var ejercicio = ejercicioRepository.findById(id);
         if (!ejercicio.isPresent()) {
             throw new IllegalArgumentException("Ejercicio no encontrado con el id: " + id);
         }

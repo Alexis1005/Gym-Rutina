@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Editar Bloque</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Editar Bloque</h1>
+
+    <!-- Fuera del form, usando ejerciciosDisponibles -->
+    <select id="ejercicios-fuente" style="display:none">
+        <option value="">Selecciona ejercicio</option>
+        <option th:each="e : ${ejerciciosDisponibles}"
+                th:value="${e.id}"
+                th:text="${e.nombre}"
+                th:data-grupo="${e.grupoMuscularId}"></option>
+    </select>
+    <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+    <form th:action="@{/bloques/{id}(id=${id})}" th:object="${bloqueDTO}" method="post" class="mt-4">
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre del Bloque</label>
+            <input type="text" class="form-control" id="nombre" th:field="*{nombre}">
+            <small class="text-danger" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></small>
+        </div>
+
+        <div class="mb-3">
+            <label for="grupo" class="form-label">Grupo Muscular</label>
+            <select class="form-control" id="grupo" onchange="grupoSeleccionado = this.value">
+                <option value="">Selecciona un grupo</option>
+                <option th:each="grupo : ${gruposMusculares}"
+                        th:value="${grupo.id}"
+                        th:text="${grupo.nombre}"></option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Ejercicios</label>
+            <table class="table" id="tablaEjercicios">
+                <thead>
+                <tr>
+                    <th>Ejercicio</th>
+                    <th>Series</th>
+                    <th>Repeticiones</th>
+                    <th>Kg</th>
+                    <th>Descanso</th>
+                    <th>Acción</th>
+                </tr>
+                </thead>
+                <tbody id="tbody-ejercicios">
+                <tr th:each="ej, stat : *{ejercicios}">
+                    <td>
+                        <select th:name="|ejercicios[${stat.index}].ejercicioId|" class="form-control" required>
+                            <option value="">Selecciona ejercicio</option>
+                            <option th:each="e : ${ejerciciosDisponibles}"
+                                    th:value="${e.id}"
+                                    th:text="${e.nombre}"
+                                    th:selected="${e.id == ej.ejercicioId}"></option>
+                        </select>
+                    </td>
+                    <td><input type="number" th:name="|ejercicios[${stat.index}].series|" th:value="${ej.series}" class="form-control" min="1" required></td>
+                    <td><input type="text" th:name="|ejercicios[${stat.index}].repeticiones|" th:value="${ej.repeticiones}" class="form-control" required></td>
+                    <td><input type="text" th:name="|ejercicios[${stat.index}].pesoKg|" th:value="${ej.pesoKg}" class="form-control" required></td>
+                    <td><input type="text" th:name="|ejercicios[${stat.index}].descansoMinutos|" th:value="${ej.descansoMinutos}" class="form-control"></td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm"
+                                onclick="eliminarFila(this)">Eliminar</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-secondary" onclick="agregarFila()">+ Agregar Ejercicio</button>
+        </div>
+
+        <button type="submit" class="btn btn-success">Actualizar</button>
+        <a href="/bloques" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    let contador = /*[[${#lists.size(bloqueDTO.ejercicios)}]]*/ 0;
+    let grupoSeleccionado = "";
+
+    function agregarFila() {
+        if (!grupoSeleccionado) {
+            alert("Seleccioná un grupo muscular antes de agregar un ejercicio.");
+            return;
+        }
+
+        let fuenteSelect = document.getElementById("ejercicios-fuente");
+        let opciones = Array.from(fuenteSelect.options).filter(opt =>
+            opt.value !== "" && opt.dataset.grupo === grupoSeleccionado
+        );
+
+        if (opciones.length === 0) {
+            alert("No hay ejercicios para el grupo seleccionado.");
+            return;
+        }
+
+        let selectHtml = '<select name="ejercicios[' + contador + '].ejercicioId" class="form-control" required>';
+        selectHtml += '<option value="">Selecciona ejercicio</option>';
+        opciones.forEach(opt => {
+            selectHtml += `<option value="${opt.value}">${opt.text}</option>`;
+        });
+        selectHtml += '</select>';
+
+        let tbody = document.getElementById("tbody-ejercicios");
+        let fila = document.createElement("tr");
+
+        fila.innerHTML = `
+            <td>${selectHtml}</td>
+            <td><input type="number" name="ejercicios[${contador}].series" class="form-control" min="1" required></td>
+            <td><input type="text" name="ejercicios[${contador}].repeticiones" class="form-control" required></td>
+            <td><input type="text" name="ejercicios[${contador}].pesoKg" class="form-control"></td>
+            <td><input type="text" name="ejercicios[${contador}].descansoMinutos" class="form-control"></td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
+                    Eliminar
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(fila);
+        contador++;
+    }
+
+    function eliminarFila(btn) {
+        btn.closest("tr").remove();
+        reindexar();
+    }
+
+    function reindexar() {
+        let filas = document.querySelectorAll("#tbody-ejercicios tr");
+
+        filas.forEach((fila, index) => {
+            fila.querySelectorAll("input, select").forEach(input => {
+                if (input.name) {
+                    input.name = input.name.replace(/ejercicios\[\d+\]/, `ejercicios[${index}]`);
+                }
+            });
+        });
+
+        contador = filas.length;
+    }
+</script>
+</body>
+</html>

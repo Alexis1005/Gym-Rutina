@@ -18,9 +18,9 @@ public class BloqueEjercicio {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     private Integer series;
-    private Integer repeticiones;
+    private String repeticiones;
     private Double pesoKg;
-    private Double descansoMinutos;
+    private String descansoMinutos;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="ejercicio_id", nullable = false)

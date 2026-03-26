@@ -17,4 +17,5 @@ public class EjercicioResponseDTO {
     private String nombre;
     private String descripcion;
     private String grupoMuscularNombre;
+    private Long grupoMuscularId;
 }

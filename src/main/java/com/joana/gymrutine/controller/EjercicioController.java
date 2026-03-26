@@ -2,15 +2,19 @@ package com.joana.gymrutine.controller;
 
 import com.joana.gymrutine.dto.ejercicio.EjercicioActualizarDTO;
 import com.joana.gymrutine.dto.ejercicio.EjercicioCrearDTO;
+import com.joana.gymrutine.model.Ejercicio;
 import com.joana.gymrutine.service.EjercicioService;
 import com.joana.gymrutine.service.GrupoMuscularService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/ejercicios")
@@ -77,5 +81,11 @@ public class EjercicioController {
         ejercicioService.eliminar(id);
         attributes.addFlashAttribute("mensaje", "Ejercicio eliminado.");
         return "redirect:/ejercicios";
+    }
+
+    @GetMapping("/por-grupo/{grupoId}")
+    public ResponseEntity<List<Ejercicio>> porGrupo(@PathVariable Long grupoId) {
+        var ejercicios = ejercicioService.listarPorGrupo(grupoId);
+        return ResponseEntity.ok(ejercicios);
     }
 }
