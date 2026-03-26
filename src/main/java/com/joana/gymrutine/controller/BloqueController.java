@@ -65,8 +65,6 @@ public class BloqueController {
                 .map(be -> new BloqueEjercicioDTO(
                         be.getEjercicio().getId(),
                         be.getSeries(),
-                        be.getRepeticiones(),
-                        be.getPesoKg(),
                         be.getDescansoMinutos()
                 ))
                 .toList();

@@ -8,7 +8,6 @@
 <div class="container mt-5">
     <h1>Editar Bloque</h1>
 
-    <!-- Fuera del form, usando ejerciciosDisponibles -->
     <select id="ejercicios-fuente" style="display:none">
         <option value="">Selecciona ejercicio</option>
         <option th:each="e : ${ejerciciosDisponibles}"
@@ -16,8 +15,10 @@
                 th:text="${e.nombre}"
                 th:data-grupo="${e.grupoMuscularId}"></option>
     </select>
+
     <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
-    <form th:action="@{/bloques/{id}(id=${id})}" th:object="${bloqueDTO}" method="post" class="mt-4">
+
+    <form th:action="@{/bloques/{id}(id=${id})}" th:object="${bloqueDTO}" method="post" class="m-4">
         <div class="mb-3">
             <label for="nombre" class="form-label">Nombre del Bloque</label>
             <input type="text" class="form-control" id="nombre" th:field="*{nombre}">
@@ -41,8 +42,6 @@
                 <tr>
                     <th>Ejercicio</th>
                     <th>Series</th>
-                    <th>Repeticiones</th>
-                    <th>Kg</th>
                     <th>Descanso</th>
                     <th>Acción</th>
                 </tr>
@@ -59,8 +58,6 @@
                         </select>
                     </td>
                     <td><input type="number" th:name="|ejercicios[${stat.index}].series|" th:value="${ej.series}" class="form-control" min="1" required></td>
-                    <td><input type="text" th:name="|ejercicios[${stat.index}].repeticiones|" th:value="${ej.repeticiones}" class="form-control" required></td>
-                    <td><input type="text" th:name="|ejercicios[${stat.index}].pesoKg|" th:value="${ej.pesoKg}" class="form-control" required></td>
                     <td><input type="text" th:name="|ejercicios[${stat.index}].descansoMinutos|" th:value="${ej.descansoMinutos}" class="form-control"></td>
                     <td>
                         <button type="button" class="btn btn-danger btn-sm"
@@ -110,8 +107,6 @@
         fila.innerHTML = `
             <td>${selectHtml}</td>
             <td><input type="number" name="ejercicios[${contador}].series" class="form-control" min="1" required></td>
-            <td><input type="text" name="ejercicios[${contador}].repeticiones" class="form-control" required></td>
-            <td><input type="text" name="ejercicios[${contador}].pesoKg" class="form-control"></td>
             <td><input type="text" name="ejercicios[${contador}].descansoMinutos" class="form-control"></td>
             <td>
                 <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
@@ -131,7 +126,6 @@
 
     function reindexar() {
         let filas = document.querySelectorAll("#tbody-ejercicios tr");
-
         filas.forEach((fila, index) => {
             fila.querySelectorAll("input, select").forEach(input => {
                 if (input.name) {
@@ -139,7 +133,6 @@
                 }
             });
         });
-
         contador = filas.length;
     }
 </script>

@@ -8,13 +8,12 @@
 <div class="container mt-5">
     <h1>Crear Bloque</h1>
 
-    <!-- Fuera del form -->
     <select id="ejercicios-fuente" style="display:none">
         <option value="">Selecciona ejercicio</option>
         <option th:each="e : ${ejerciciosDisponibles}"
                 th:value="${e.id}"
                 th:text="${e.nombre}"
-                th:attr="data-grupo=${e.grupoMuscularId}"></option>
+                th:data-grupo="${e.grupoMuscularId}"></option>
     </select>
 
     <form th:action="@{/bloques}" th:object="${bloqueDTO}" method="post" class="mt-4">
@@ -41,8 +40,6 @@
                 <tr>
                     <th>Ejercicio</th>
                     <th>Series</th>
-                    <th>Repeticiones</th>
-                    <th>Kg</th>
                     <th>Descanso</th>
                     <th>Acción</th>
                 </tr>
@@ -89,14 +86,29 @@
         fila.innerHTML = `
             <td>${selectHtml}</td>
             <td><input type="number" name="ejercicios[${contador}].series" class="form-control" min="1" required></td>
-            <td><input type="text" name="ejercicios[${contador}].repeticiones" class="form-control" required></td>
-            <td><input type="text" name="ejercicios[${contador}].pesoKg" step="0.1" class="form-control"></td>
             <td><input type="text" name="ejercicios[${contador}].descansoMinutos" class="form-control"></td>
             <td><button type="button" class="btn btn-danger btn-sm"
-                onclick="this.parentElement.parentElement.remove()">Eliminar</button></td>
+                onclick="eliminarFila(this)">Eliminar</button></td>
         `;
         tbody.appendChild(fila);
         contador++;
+    }
+
+    function eliminarFila(btn) {
+        btn.closest("tr").remove();
+        reindexar();
+    }
+
+    function reindexar() {
+        let filas = document.querySelectorAll("#tbody-ejercicios tr");
+        filas.forEach((fila, index) => {
+            fila.querySelectorAll("input, select").forEach(input => {
+                if (input.name) {
+                    input.name = input.name.replace(/ejercicios\[\d+\]/, `ejercicios[${index}]`);
+                }
+            });
+        });
+        contador = filas.length;
     }
 </script>
 </body>

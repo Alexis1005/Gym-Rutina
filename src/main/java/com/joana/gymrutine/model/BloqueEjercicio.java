@@ -4,6 +4,10 @@ package com.joana.gymrutine.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import javax.xml.parsers.SAXParser;
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -18,8 +22,6 @@ public class BloqueEjercicio {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     private Integer series;
-    private String repeticiones;
-    private Double pesoKg;
     private String descansoMinutos;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,4 +31,7 @@ public class BloqueEjercicio {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="bloque_id", nullable = false)
     private Bloque bloque;
+
+    @OneToMany(mappedBy = "bloqueEjercicio", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<RutinaBloqueEjercicioSemana> semanas = new ArrayList<>();
 }

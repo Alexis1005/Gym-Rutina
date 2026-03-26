@@ -23,6 +23,7 @@ public class Rutina {
 
     private String nombre;
     private String descripcion;
+    private Integer cantidadSemanas;
 
     @OneToMany(mappedBy = "rutina",  cascade = CascadeType.ALL, orphanRemoval = true)
     List<RutinaBloque> rutinaBloques;

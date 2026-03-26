@@ -29,17 +29,17 @@ public class BloqueService {
     @Autowired
     private BloqueEjercicioRepository bloqueEjercicioRepository;
 
-    public Bloque crear(BloqueCrearDTO dto){
+    public Bloque crear(BloqueCrearDTO dto) {
 
-        if (dto.getNombre() == null || dto.getNombre().isEmpty()){
+        if (dto.getNombre() == null || dto.getNombre().isEmpty()) {
             throw new IllegalArgumentException("El nombre no puede estar vacío");
         }
 
-        if (bloqueRepository.existsByNombre(dto.getNombre())){
+        if (bloqueRepository.existsByNombre(dto.getNombre())) {
             throw new IllegalArgumentException("El nombre ya existe en el sistema");
         }
 
-        if (dto.getEjercicios() == null || dto.getEjercicios().isEmpty()){
+        if (dto.getEjercicios() == null || dto.getEjercicios().isEmpty()) {
             throw new IllegalArgumentException("El bloque no contiene ejercicios.");
         }
 
@@ -49,18 +49,18 @@ public class BloqueService {
 
         dto.getEjercicios().forEach(ejercicioDTO -> {
             var ejercicio = ejercicioRepository.findById(ejercicioDTO.getEjercicioId())
-                    .orElseThrow(()-> new IllegalArgumentException("El ejercicio no existe"));
+                    .orElseThrow(() -> new IllegalArgumentException("El ejercicio no existe"));
+
             BloqueEjercicio bloqueEjercicio = new BloqueEjercicio();
             bloqueEjercicio.setBloque(bloque);
             bloqueEjercicio.setEjercicio(ejercicio);
             bloqueEjercicio.setSeries(ejercicioDTO.getSeries());
-            bloqueEjercicio.setRepeticiones(ejercicioDTO.getRepeticiones());
-            bloqueEjercicio.setPesoKg(ejercicioDTO.getPesoKg());
             bloqueEjercicio.setDescansoMinutos(ejercicioDTO.getDescansoMinutos());
 
-            bloqueEjercicioRepository.save(bloqueEjercicio);
+            bloque.getBloqueEjercicio().add(bloqueEjercicio); // consistente con actualizar
         });
-        return bloque;
+
+        return bloqueRepository.save(bloque);
     }
 
     public List<Bloque> listar(){
@@ -109,8 +109,6 @@ public class BloqueService {
             bloqueEjercicio.setBloque(bloqueExistente);
             bloqueEjercicio.setEjercicio(ejercicio);
             bloqueEjercicio.setSeries(ejercicioDTO.getSeries());
-            bloqueEjercicio.setRepeticiones(ejercicioDTO.getRepeticiones());
-            bloqueEjercicio.setPesoKg(ejercicioDTO.getPesoKg());
             bloqueEjercicio.setDescansoMinutos(ejercicioDTO.getDescansoMinutos());
 
             bloqueExistente.getBloqueEjercicio().add(bloqueEjercicio);

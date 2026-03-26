@@ -17,11 +17,5 @@ public class BloqueEjercicioDTO {
     @NotNull(message = "Las series son obligatorias")
     private Integer series;
 
-    @NotBlank(message = "Las repeticiones son obligatorias")
-    private String repeticiones;
-
-    @NotNull(message = "El peso es obligatorio")
-    private Double pesoKg;
-
     private String descansoMinutos;
 }
