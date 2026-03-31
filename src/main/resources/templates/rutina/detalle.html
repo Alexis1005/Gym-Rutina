@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Rutina - GymRutine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <!-- Mensaje de éxito -->
+            <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong th:text="${mensaje}"></strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Header de rutina -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0" th:text="${rutina.nombre}"></h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="text-muted" th:text="${rutina.descripcion}"></p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p class="mb-2">
+                                        <strong>Semanas:</strong>
+                                        <span th:text="${rutina.cantidadSemanas}"></span>
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>Bloques:</strong>
+                                        <span th:text="${rutina.rutinaBloques.size()}"></span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloques de la rutina -->
+            <div th:each="rutinaBloque : ${rutina.rutinaBloques}" class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <span th:text="'Bloque ' + ${rutinaBloque.orden} + ': ' + ${rutinaBloque.bloque.nombre}"></span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Tabla de ejercicios del bloque -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Ejercicio</th>
+                                <th>Series</th>
+                                <th>Descanso (min)</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="bloqueEjercicio : ${rutinaBloque.bloque.bloqueEjercicio}">
+                                <td th:text="${bloqueEjercicio.ejercicio.nombre}"></td>
+                                <td th:text="${bloqueEjercicio.series}"></td>
+                                <td th:text="${bloqueEjercicio.descansoMinutos}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tabla de reps y peso por semana (PLACEHOLDER) -->
+                    <div class="mt-4">
+                        <h6 class="border-bottom pb-2">Progresión por Semana</h6>
+                        <div class="alert alert-info">
+                            <strong>Próximamente:</strong> En esta sección cargarás las repeticiones y peso por ejercicio en cada semana.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-flex gap-2 mb-4">
+                <a href="/rutinas" class="btn btn-secondary">Volver a Rutinas</a>
+                <a href="/rutinas" class="btn btn-warning">Editar</a>
+                <button class="btn btn-danger" onclick="confirmarEliminar()">Eliminar</button>
+                <a href="#" class="btn btn-success">Exportar PDF</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function confirmarEliminar() {
+        if (confirm('¿Estás seguro de que deseas eliminar esta rutina?')) {
+            // Aquí iría la lógica de eliminar (por ahora solo muestra alerta)
+            alert('Funcionalidad de eliminar pendiente');
+        }
+    }
+</script>
+</body>
+</html>

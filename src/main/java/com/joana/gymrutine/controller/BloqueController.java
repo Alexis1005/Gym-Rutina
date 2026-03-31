@@ -64,6 +64,7 @@ public class BloqueController {
         var ejerciciosDTO = bloque.getBloqueEjercicio().stream()
                 .map(be -> new BloqueEjercicioDTO(
                         be.getEjercicio().getId(),
+                        be.getEjercicio().getNombre(),
                         be.getSeries(),
                         be.getDescansoMinutos()
                 ))

@@ -17,7 +17,7 @@ public class RutinaBloque {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String etiquetaSemana;
+    private Integer orden;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="rutina_id", nullable=false)

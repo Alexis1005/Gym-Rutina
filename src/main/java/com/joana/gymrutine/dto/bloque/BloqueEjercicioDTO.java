@@ -14,6 +14,8 @@ public class BloqueEjercicioDTO {
     @NotNull(message = "Debe seleccionar un ejercicio")
     private Long ejercicioId;
 
+    private String nombreEjercicio;
+
     @NotNull(message = "Las series son obligatorias")
     private Integer series;
 

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Rutina - GymRutine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Crear Rutina</h2>
+                </div>
+                <div class="card-body">
+
+
+                    <!-- Formulario -->
+                    <form th:object="${rutina}" method="POST" action="/rutinas" id="rutinaForm">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <!-- Mensaje de error general -->
+                        <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger alert-dismissible fade show"
+                             role="alert">
+                            <strong>Error:</strong>
+                            <ul class="mb-0">
+                                <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- SECCIÓN 1: Datos básicos -->
+                        <div class="mb-4">
+                            <h4 class="border-bottom pb-2">Información Básica</h4>
+
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre de la Rutina *</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="nombre"
+                                       th:field="*{nombre}"
+                                       th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}">
+                                    <span th:errors="*{nombre}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="descripcion" class="form-label">Descripción</label>
+                                <textarea class="form-control"
+                                          id="descripcion"
+                                          th:field="*{descripcion}"
+                                          rows="3"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="cantidadSemanas" class="form-label">Cantidad de Semanas *</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="cantidadSemanas"
+                                       th:field="*{cantidadSemanas}"
+                                       min="1"
+                                       th:classappend="${#fields.hasErrors('cantidadSemanas')} ? 'is-invalid'">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('cantidadSemanas')}">
+                                    <span th:errors="*{cantidadSemanas}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 2: Selector de bloques disponibles -->
+                        <div class="mb-4">
+                            <h4 class="border-bottom pb-2">Agregar Días</h4>
+
+                            <!-- Tabla de bloques disponibles -->
+                            <div class="accordion mb-3" id="bloquesDisponiblesAccordion">
+                                <div th:each="bloque, iter : ${rutinaBloques}" class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                th:attr="data-bs-target='#bloque-' + ${bloque.id}">
+                                            <span th:text="${bloque.nombre}"></span>
+                                            <span class="ms-2 badge bg-secondary"
+                                                  th:text="${bloque.ejercicios.size()} + ' ejercicios'"></span>
+                                        </button>
+                                    </h2>
+                                    <div th:id="'bloque-' + ${bloque.id}"
+                                         class="accordion-collapse collapse"
+                                         data-bs-parent="#bloquesDisponiblesAccordion">
+                                        <div class="accordion-body">
+                                            <!-- Tabla de ejercicios del bloque -->
+                                            <table class="table table-sm table-hover mb-3">
+                                                <thead class="table-light">
+                                                <tr>
+                                                    <th>Ejercicio</th>
+                                                    <th>Series</th>
+                                                    <th>Descanso (min)</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr th:each="ej : ${bloque.ejercicios}">
+                                                    <td th:text="${ej.nombreEjercicio}"></td>
+                                                    <td th:text="${ej.series}"></td>
+                                                    <td th:text="${ej.descansoMinutos}"></td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+
+                                            <!-- Formulario para agregar bloque -->
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Orden de los días *</label>
+                                                    <input type="number"
+                                                           class="form-control"
+                                                           th:id="'orden-' + ${bloque.id}"
+                                                           min="1"
+                                                           placeholder="Ej: 1">
+                                                </div>
+                                                <div class="col-md-6 d-flex align-items-end">
+                                                    <button type="button"
+                                                            class="btn btn-primary w-100 btn-agregar"
+                                                            th:data-bloque-id="${bloque.id}"
+                                                            th:data-bloque-nombre="${bloque.nombre}">
+                                                        Agregar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div th:if="${#lists.isEmpty(rutinaBloques)}" class="alert alert-info">
+                                No hay días disponibles. Debes crear días primero.
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 3: Bloques seleccionados -->
+                        <div class="mb-4">
+                            <h4 class="border-bottom pb-2">Días Seleccionados *</h4>
+                            <div th:if="${#fields.hasErrors('bloques')}" class="alert alert-danger">
+                                <span th:errors="*{bloques}"></span>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="bloquesSeleccionadosTable">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th>Bloque</th>
+                                        <th>Orden</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="bloquesContainer">
+                                    <!-- Se llenan dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div id="sinBloquesMsg" class="alert alert-warning">
+                                Selecciona al menos un día para crear la rutina.
+                            </div>
+                        </div>
+
+                        <!-- Inputs ocultos para array de bloques -->
+                        <div id="bloquesHidden"></div>
+
+                        <!-- Botones -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">Crear Rutina</button>
+                            <a href="/rutinas" class="btn btn-secondary">Cancelar</a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Array en memoria para los bloques seleccionados
+    let bloquesSeleccionados = [];
+
+// Event delegation para botones "Agregar"
+document.querySelectorAll('.btn-agregar').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const bloqueId = parseInt(this.dataset.bloqueId);
+        const nombreBloque = this.dataset.bloqueNombre;
+        agregarBloque(bloqueId, nombreBloque);
+    });
+});
+
+    function agregarBloque(bloqueId, nombreBloque) {
+        const ordenInput = document.getElementById('orden-' + bloqueId);
+        const orden = parseInt(ordenInput.value);
+
+        // Validaciones
+        if (!orden || orden <= 0) {
+            alert('Debes ingresar un orden válido (mayor a 0)');
+            return;
+        }
+
+        // Verificar orden duplicado
+        if (bloquesSeleccionados.some(b => b.orden === orden)) {
+            alert('Ya existe un bloque con orden ' + orden);
+            return;
+        }
+
+        // Verificar bloque duplicado
+        if (bloquesSeleccionados.some(b => b.bloqueId === bloqueId)) {
+            alert('Este bloque ya está seleccionado');
+            return;
+        }
+
+        // Agregar al array
+        bloquesSeleccionados.push({
+            bloqueId: bloqueId,
+            nombreBloque: nombreBloque,
+            orden: orden
+        });
+
+        // Limpiar input
+        ordenInput.value = '';
+
+        // Actualizar tabla y inputs ocultos
+        actualizarTablaBloques();
+    }
+
+    function eliminarBloque(index) {
+        bloquesSeleccionados.splice(index, 1);
+        actualizarTablaBloques();
+    }
+
+    function actualizarTablaBloques() {
+        const container = document.getElementById('bloquesContainer');
+        const sinBloquesMsg = document.getElementById('sinBloquesMsg');
+        const bloquesHidden = document.getElementById('bloquesHidden');
+
+        // Limpiar tabla e inputs ocultos
+        container.innerHTML = '';
+        bloquesHidden.innerHTML = '';
+
+        if (bloquesSeleccionados.length === 0) {
+            sinBloquesMsg.style.display = 'block';
+            return;
+        }
+
+        sinBloquesMsg.style.display = 'none';
+
+        // Ordenar por orden
+        const bloquesSorted = [...bloquesSeleccionados].sort((a, b) => a.orden - b.orden);
+
+        // Rellenar tabla
+        bloquesSorted.forEach((bloque, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${bloque.nombreBloque}</td>
+                <td>${bloque.orden}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarBloque(${index})">
+                        Eliminar
+                    </button>
+                </td>
+            `;
+            container.appendChild(row);
+
+            // Crear inputs ocultos
+            const inputBloqueId = document.createElement('input');
+            inputBloqueId.type = 'hidden';
+            inputBloqueId.name = `bloques[${index}].bloqueId`;
+            inputBloqueId.value = bloque.bloqueId;
+
+            const inputOrden = document.createElement('input');
+            inputOrden.type = 'hidden';
+            inputOrden.name = `bloques[${index}].orden`;
+            inputOrden.value = bloque.orden;
+
+            bloquesHidden.appendChild(inputBloqueId);
+            bloquesHidden.appendChild(inputOrden);
+        });
+    }
+
+    // Validar antes de enviar
+    document.getElementById('rutinaForm').addEventListener('submit', function(e) {
+        if (bloquesSeleccionados.length === 0) {
+            e.preventDefault();
+            alert('Debes seleccionar al menos un bloque');
+        }
+    });
+</script>
+</body>
+</html>

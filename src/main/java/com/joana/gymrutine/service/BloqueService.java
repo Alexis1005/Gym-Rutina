@@ -4,16 +4,13 @@ import com.joana.gymrutine.dto.bloque.BloqueActualizarDTO;
 import com.joana.gymrutine.dto.bloque.BloqueCrearDTO;
 import com.joana.gymrutine.model.Bloque;
 import com.joana.gymrutine.model.BloqueEjercicio;
-import com.joana.gymrutine.model.Ejercicio;
 import com.joana.gymrutine.repository.BloqueEjercicioRepository;
 import com.joana.gymrutine.repository.BloqueRepository;
 import com.joana.gymrutine.repository.EjercicioRepository;
-import com.joana.gymrutine.repository.GrupoMuscularRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
