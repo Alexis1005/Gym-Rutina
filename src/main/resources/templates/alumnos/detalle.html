@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Alumno - GymRutine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+
+            <!-- Mensaje de éxito -->
+            <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${mensaje}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Mensaje de error -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- CARD: Información del alumno -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0" th:text="${alumno.nombreApellido}"></h2>
+                    <div>
+                        <a th:href="@{/alumnos/{id}/editar(id=${alumno.id})}" class="btn btn-warning btn-sm">Editar</a>
+                        <form th:action="@{/alumnos/{id}/eliminar(id=${alumno.id})}" method="POST" style="display:inline;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este alumno?')">
+                                Eliminar
+                            </button>
+                        </form>
+                        <a href="/alumnos" class="btn btn-secondary btn-sm">Volver</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Nombre y Apellido:</strong></p>
+                            <p th:text="${alumno.nombreApellido}"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Observaciones:</strong></p>
+                            <p th:text="${alumno.observaciones}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD: Rutinas asignadas -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Rutinas Asignadas</h4>
+                </div>
+                <div class="card-body">
+
+                    <!-- Tabla de rutinas -->
+                    <div th:if="${!#lists.isEmpty(alumno.rutinas)}" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Rutina</th>
+                                <th>Fecha Asignación</th>
+                                <th>Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="rutina : ${alumno.rutinas}">
+                                <td>
+                                    <strong th:text="${rutina.rutinaNombre}"></strong>
+                                </td>
+                                <td th:text="${#temporals.format(rutina.fechaAsignacion, 'dd/MM/yyyy')}"></td>
+                                <td>
+                                    <form th:action="@{/alumnos/{id}/asignaciones/{asignacionId}/eliminar(id=${alumno.id}, asignacionId=${rutina.id})}"
+                                          method="POST"
+                                          style="display:inline;">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desasignar esta rutina?')">
+                                            Desasignar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mensaje si no hay rutinas asignadas -->
+                    <div th:if="${#lists.isEmpty(alumno.rutinas)}" class="alert alert-warning">
+                        Este alumno no tiene rutinas asignadas aún.
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- CARD: Asignar nueva rutina -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Asignar Nueva Rutina</h4>
+                </div>
+                <div class="card-body">
+
+                    <div th:if="${#lists.isEmpty(rutinasDisponibles)}" class="alert alert-warning">
+                        No hay rutinas disponibles para asignar. Todas las rutinas ya están asignadas o no existen.
+                    </div>
+
+                    <div th:if="${!#lists.isEmpty(rutinasDisponibles)}" class="row">
+                        <div class="col-md-8">
+                            <form th:action="@{/alumnos/{id}/asignar-rutina(id=${alumno.id})}" method="POST" class="d-flex gap-2">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                                <select class="form-select" name="rutinaId" required>
+                                    <option value="">-- Selecciona una rutina --</option>
+                                    <option th:each="rutina : ${rutinasDisponibles}"
+                                            th:value="${rutina.id}"
+                                            th:text="${rutina.nombre}">
+                                    </option>
+                                </select>
+
+                                <button type="submit" class="btn btn-success">Asignar</button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
