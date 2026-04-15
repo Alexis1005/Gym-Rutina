@@ -8,8 +8,13 @@ import com.joana.gymrutine.model.Rutina;
 import com.joana.gymrutine.repository.RutinaRepository;
 import com.joana.gymrutine.service.AlumnoService;
 import com.joana.gymrutine.service.AsignacionRutinaService;
+import com.joana.gymrutine.service.RutinaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,6 +36,9 @@ public class AlumnoController {
 
     @Autowired
     private RutinaRepository  rutinaRepository;
+
+    @Autowired
+    private RutinaService rutinaService;
 
     @GetMapping("/crear")
     public String mostarFormulario(Model model) {
@@ -159,6 +167,27 @@ public class AlumnoController {
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/alumnos";
+        }
+    }
+
+    @GetMapping("/{alumnoId}/rutinas/{rutinaId}/exportar-pdf")
+    public ResponseEntity<byte[]> exportarRutinaPdf(
+            @PathVariable Long alumnoId,
+            @PathVariable Long rutinaId,
+            RedirectAttributes redirectAttributes) {
+        try {
+            byte[] pdfBytes = rutinaService.generarPdfRutina(alumnoId, rutinaId);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "rutina.pdf");
+
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

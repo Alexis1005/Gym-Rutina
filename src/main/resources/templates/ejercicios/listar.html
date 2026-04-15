@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
+<div th:insert="fragments/navbar :: navbar"></div>
+<div th:insert="fragments/error-alert"></div>
 <div class="container mt-5">
     <h1>Ejercicios</h1>
 
@@ -13,7 +15,6 @@
     <table class="table table-striped">
         <thead>
         <tr>
-            <th>ID</th>
             <th>Nombre</th>
             <th>Descripción</th>
             <th>Grupo Muscular</th>
@@ -22,7 +23,6 @@
         </thead>
         <tbody>
         <tr th:each="ejercicio : ${ejercicios}">
-            <td th:text="${ejercicio.id}"></td>
             <td th:text="${ejercicio.nombre}"></td>
             <td th:text="${ejercicio.descripcion}"></td>
             <td th:text="${ejercicio.grupoMuscular.nombre}"></td>
@@ -36,5 +36,7 @@
         </tbody>
     </table>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

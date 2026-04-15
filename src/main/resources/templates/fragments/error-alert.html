@@ -1,0 +1,21 @@
+<div th:if="${error}"
+     id="alertError"
+     class="alert alert-danger alert-dismissible fade show"
+     role="alert">
+    <strong>❌ Error:</strong>
+    <span th:text="${error}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+</div>
+
+<script>
+    // Auto-desaparecer después de 5 segundos
+    document.addEventListener('DOMContentLoaded', function() {
+        const alertElement = document.getElementById('alertError');
+        if (alertElement) {
+            setTimeout(function() {
+                alertElement.classList.remove('show');
+                alertElement.style.display = 'none';
+            }, 5000);
+        }
+    });
+</script>

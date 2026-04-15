@@ -5,4 +5,5 @@ import com.joana.gymrutine.model.RutinaBloque;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RutinaBloqueRepository extends JpaRepository<RutinaBloque, Long> {
+    boolean existsByBloqueId(Long bloqueId);
 }

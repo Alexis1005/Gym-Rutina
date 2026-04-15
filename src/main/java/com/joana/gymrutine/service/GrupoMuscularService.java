@@ -3,6 +3,7 @@ package com.joana.gymrutine.service;
 import com.joana.gymrutine.dto.grupoMuscular.GrupoMuscularActualizarDTO;
 import com.joana.gymrutine.dto.grupoMuscular.GrupoMuscularCrearDTO;
 import com.joana.gymrutine.dto.grupoMuscular.GrupoMuscularResponseDTO;
+import com.joana.gymrutine.exception.EntityNotDeletableException;
 import com.joana.gymrutine.model.GrupoMuscular;
 import com.joana.gymrutine.repository.GrupoMuscularRepository;
 import jakarta.transaction.Transactional;
@@ -111,7 +112,12 @@ public class GrupoMuscularService {
 
         //VALIDAR QUE NO TENGA EJERCICIOS
         if (grupoEncontrado.get().getEjercicios() != null && !grupoEncontrado.get().getEjercicios().isEmpty()) {
-            throw new IllegalArgumentException("El ejercicio no puede ser eliminado! Tiene " + grupoEncontrado.get().getEjercicios().size() + " ejercicios.");
+            int cantEjercicios = grupoEncontrado.get().getEjercicios().size();
+            throw new EntityNotDeletableException(
+                    "No se puede eliminar el grupo muscular. Tiene " + cantEjercicios +
+                            " ejercicio" + (cantEjercicios != 1 ? "s" : "") + " asociado" +
+                            (cantEjercicios != 1 ? "s" : "") + "."
+            );
         }
         grupoMuscularRepository.deleteById(id);
     }

@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BloqueEjercicioRepository extends JpaRepository<BloqueEjercicio, Long> {
     void deleteByBloqueId(Long id);
+
+    boolean existsByBloqueId(Long id);
 }

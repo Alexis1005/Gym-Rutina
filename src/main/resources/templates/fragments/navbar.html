@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+    <div class="container-fluid">
+        <!-- Logo/Marca -->
+        <a class="navbar-brand fw-bold" href="/dashboard">
+            <img th:src="@{/images/JRGym.png}" width="60px" height="25" alt="Logo"> GymRutine
+        </a>
+
+        <!-- Botón hamburguesa (mobile) -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Links de navegación -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+
+                <!-- ===== GRUPOS MUSCULARES ===== -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="gruposDropdown" role="button" data-bs-toggle="dropdown">
+                        💪 Grupos Musculares
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="gruposDropdown">
+                        <li><a class="dropdown-item" href="/grupos-musculares">📋 Listar</a></li>
+                        <li><a class="dropdown-item" href="/grupos-musculares/crear">➕ Crear</a></li>
+                    </ul>
+                </li>
+
+                <!-- ===== EJERCICIOS ===== -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="ejerciciosDropdown" role="button" data-bs-toggle="dropdown">
+                        🏋️ Ejercicios
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="ejerciciosDropdown">
+                        <li><a class="dropdown-item" href="/ejercicios">📋 Listar</a></li>
+                        <li><a class="dropdown-item" href="/ejercicios/crear">➕ Crear</a></li>
+                    </ul>
+                </li>
+
+                <!-- ===== BLOQUES ===== -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="bloquesDropdown" role="button" data-bs-toggle="dropdown">
+                        📋 Días
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="bloquesDropdown">
+                        <li><a class="dropdown-item" href="/bloques">📋 Listar</a></li>
+                        <li><a class="dropdown-item" href="/bloques/crear">➕ Crear</a></li>
+                    </ul>
+                </li>
+
+                <!-- ===== RUTINAS ===== -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="rutinasDropdown" role="button" data-bs-toggle="dropdown">
+                        📅 Rutinas
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="rutinasDropdown">
+                        <li><a class="dropdown-item" href="/rutinas">📋 Listar</a></li>
+                        <li><a class="dropdown-item" href="/rutinas/crear">➕ Crear</a></li>
+                    </ul>
+                </li>
+
+                <!-- ===== ALUMNOS ===== -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="alumnosDropdown" role="button" data-bs-toggle="dropdown">
+                        👤 Alumnos
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="alumnosDropdown">
+                        <li><a class="dropdown-item" href="/alumnos">📋 Listar</a></li>
+                        <li><a class="dropdown-item" href="/alumnos/crear">➕ Crear</a></li>
+                    </ul>
+                </li>
+
+                <!-- Separador -->
+                <li class="nav-item">
+                    <hr class="dropdown-divider d-none d-lg-block" style="background-color: rgba(255,255,255,0.3); height: 30px;">
+                </li>
+
+                <!-- Logout (opcional) -->
+                <li class="nav-item">
+                    <form th:action="@{/logout}" method="POST" style="display:inline;">
+                        <button type="submit" class="nav-link btn btn-link text-light">
+                            🚪 Salir
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar-brand {
+        font-size: 1.5rem;
+        margin-right: 30px;
+    }
+
+    .nav-link {
+        margin: 0 5px;
+        transition: color 0.3s;
+        font-weight: 500;
+    }
+
+    .nav-link:hover {
+        color: #fff !important;
+    }
+
+    .dropdown-menu {
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-item {
+        padding: 10px 20px;
+        transition: background-color 0.2s;
+    }
+
+    .dropdown-item:hover {
+        background-color: #e7f1ff;
+        color: #0c5de4;
+    }
+
+    .dropdown-item.text-muted {
+        color: #999 !important;
+        cursor: not-allowed;
+    }
+
+    .sticky-top {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    @media (max-width: 991.98px) {
+        .navbar-collapse {
+            margin-top: 10px;
+        }
+
+        .dropdown-menu {
+            background-color: #0d4fa0;
+            border: none;
+        }
+
+        .dropdown-item {
+            color: #fff;
+        }
+
+        .dropdown-item:hover {
+            background-color: #0a3d7a;
+            color: #fff;
+        }
+    }
+</style>
+
+</body>
+</html>

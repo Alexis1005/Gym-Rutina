@@ -10,7 +10,6 @@ import com.joana.gymrutine.model.RutinaBloqueEjercicioSemana;
 import com.joana.gymrutine.repository.BloqueRepository;
 import com.joana.gymrutine.repository.RutinaBloqueEjercicioSemanaRepository;
 import com.joana.gymrutine.repository.RutinaRepository;
-import com.joana.gymrutine.service.BloqueService;
 import com.joana.gymrutine.service.RutinaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

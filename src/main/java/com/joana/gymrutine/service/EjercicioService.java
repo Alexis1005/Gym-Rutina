@@ -3,7 +3,9 @@ package com.joana.gymrutine.service;
 import com.joana.gymrutine.dto.ejercicio.EjercicioActualizarDTO;
 import com.joana.gymrutine.dto.ejercicio.EjercicioCrearDTO;
 import com.joana.gymrutine.dto.ejercicio.EjercicioResponseDTO;
+import com.joana.gymrutine.exception.EntityNotDeletableException;
 import com.joana.gymrutine.model.Ejercicio;
+import com.joana.gymrutine.repository.BloqueEjercicioRepository;
 import com.joana.gymrutine.repository.EjercicioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,8 @@ public class EjercicioService {
     private EjercicioRepository ejercicioRepository;
     @Autowired
     private GrupoMuscularService grupoMuscularService;
+    @Autowired
+    private BloqueEjercicioRepository bloqueEjercicioRepository;
 
     public Ejercicio crear(EjercicioCrearDTO dto) {
 
@@ -111,6 +115,12 @@ public class EjercicioService {
         var ejercicio = ejercicioRepository.findById(id);
         if (!ejercicio.isPresent()) {
             throw new IllegalArgumentException("Ejercicio no encontrado con el id: " + id);
+        }
+
+        boolean estaIncluido = bloqueEjercicioRepository.existsByBloqueId(id);
+        if (estaIncluido) {
+            throw new EntityNotDeletableException("No se puede eliminar el ejercicio! Está incluido "+
+                    "en un día creado.");
         }
         ejercicioRepository.deleteById(id);
     }

@@ -2,11 +2,13 @@ package com.joana.gymrutine.service;
 
 import com.joana.gymrutine.dto.bloque.BloqueActualizarDTO;
 import com.joana.gymrutine.dto.bloque.BloqueCrearDTO;
+import com.joana.gymrutine.exception.EntityNotDeletableException;
 import com.joana.gymrutine.model.Bloque;
 import com.joana.gymrutine.model.BloqueEjercicio;
 import com.joana.gymrutine.repository.BloqueEjercicioRepository;
 import com.joana.gymrutine.repository.BloqueRepository;
 import com.joana.gymrutine.repository.EjercicioRepository;
+import com.joana.gymrutine.repository.RutinaBloqueRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,9 @@ public class BloqueService {
 
     @Autowired
     private EjercicioRepository ejercicioRepository;
+
+    @Autowired
+    private RutinaBloqueRepository rutinaBloqueRepository;
 
     @Autowired
     private BloqueEjercicioRepository bloqueEjercicioRepository;
@@ -117,6 +122,11 @@ public class BloqueService {
     public void eliminar(Long id){
         if (id == null || id <= 0){
             throw new IllegalArgumentException("Id invalido");
+        }
+
+        boolean estaIncluido = rutinaBloqueRepository.existsByBloqueId(id);
+        if (estaIncluido){
+            throw new EntityNotDeletableException("El día no se puede eliminar! Está incluido en una rutina");
         }
         bloqueRepository.deleteById(id);
     }
