@@ -1,5 +1,6 @@
 package com.joana.gymrutine.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,6 +12,13 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
+
+
+    @Value("${app.security.username}")
+    private String adminUsername;
+
+    @Value("${app.security.password}")
+    private String adminPassword;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -31,12 +39,11 @@ public class SecurityConfig {
                .build();
     }
 
-    // Usuario en memoria (para pruebas)
     @Bean
     public UserDetailsService userDetailsService() {
         UserDetails user = User.builder()
-                .username("joa")
-                .password(passwordEncoder().encode("191014"))
+                .username(adminUsername)
+                .password(passwordEncoder().encode(adminPassword))
                 .roles("ADMIN")
                 .build();
 

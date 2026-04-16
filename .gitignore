@@ -19,6 +19,13 @@ target/
 *.iml
 *.ipr
 
+### ARCHIVO DE CONFIGURACION ###
+application-local.properties
+
+### VARIABLES DE ENTORNO ###
+.env
+.env.local
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
