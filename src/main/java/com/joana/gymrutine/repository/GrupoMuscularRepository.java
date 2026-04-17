@@ -11,5 +11,5 @@ public interface GrupoMuscularRepository extends JpaRepository<GrupoMuscular, Lo
 
     Optional<GrupoMuscular> findByNombre(String nombre);
 
-    boolean existsByNombre(String nombre);
+    boolean existsByNombreIgnoreCase(String nombre);
 }

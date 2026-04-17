@@ -3,6 +3,7 @@ package com.joana.gymrutine.service;
 import com.joana.gymrutine.dto.grupoMuscular.GrupoMuscularActualizarDTO;
 import com.joana.gymrutine.dto.grupoMuscular.GrupoMuscularCrearDTO;
 import com.joana.gymrutine.dto.grupoMuscular.GrupoMuscularResponseDTO;
+import com.joana.gymrutine.exception.DuplicateEntityException;
 import com.joana.gymrutine.exception.EntityNotDeletableException;
 import com.joana.gymrutine.model.GrupoMuscular;
 import com.joana.gymrutine.repository.GrupoMuscularRepository;
@@ -31,8 +32,8 @@ public class GrupoMuscularService {
     public GrupoMuscular crear(GrupoMuscularCrearDTO dto) {
 
         //validacion por duplicado en la bdd
-        if (grupoMuscularRepository.existsByNombre(dto.getNombre().trim())) {
-            throw new IllegalArgumentException("El nombre del grupo muscular existe!");
+        if (grupoMuscularRepository.existsByNombreIgnoreCase(dto.getNombre().trim())) {
+            throw new DuplicateEntityException("El nombre del grupo muscular existe!");
         }
 
         //crea el objeto

@@ -1,5 +1,6 @@
 package com.joana.gymrutine.config;
 
+import com.joana.gymrutine.exception.DuplicateEntityException;
 import com.joana.gymrutine.exception.EntityNotDeletableException;
 import com.joana.gymrutine.exception.EntityNotFoundException;
 import com.joana.gymrutine.exception.InvalidOperationException;
@@ -12,6 +13,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private ModelAndView redirectWithError(
+            String message,
+            HttpServletRequest request,
+            RedirectAttributes redirectAttributes){
+        redirectAttributes.addFlashAttribute("error", message);
+
+        String referer = request.getHeader("Referer");
+        if (referer == null || referer.isEmpty()) {
+            referer= "/";
+        }
+        return new ModelAndView("redirect:" + referer);
+    }
+
     /**
      * Maneja excepciones cuando una entidad no puede ser eliminada
      * Redirige a la página anterior con el mensaje de error
@@ -22,15 +36,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request,
             RedirectAttributes redirectAttributes) {
 
-        redirectAttributes.addFlashAttribute("error", ex.getMessage());
-
-        // Obtiene la URL anterior del header Referer
-        String referer = request.getHeader("Referer");
-        if (referer == null || referer.isEmpty()) {
-            referer = "/";
-        }
-
-        return new ModelAndView("redirect:" + referer);
+       return redirectWithError(ex.getMessage(), request, redirectAttributes);
     }
 
     /**
@@ -42,14 +48,21 @@ public class GlobalExceptionHandler {
             HttpServletRequest request,
             RedirectAttributes redirectAttributes) {
 
-        redirectAttributes.addFlashAttribute("error", ex.getMessage());
+       return redirectWithError(ex.getMessage(), request, redirectAttributes);
+    }
 
-        String referer = request.getHeader("Referer");
-        if (referer == null || referer.isEmpty()) {
-            referer = "/";
-        }
 
-        return new ModelAndView("redirect:" + referer);
+    /**
+    * Maneja duplicados
+    * */
+
+    @ExceptionHandler(DuplicateEntityException.class)
+    public ModelAndView handleDuplicateEntityException(
+            DuplicateEntityException ex,
+            HttpServletRequest request,
+            RedirectAttributes redirectAttributes) {
+
+       return redirectWithError(ex.getMessage(), request, redirectAttributes);
     }
 
     /**
