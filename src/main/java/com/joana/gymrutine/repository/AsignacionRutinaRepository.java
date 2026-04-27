@@ -13,4 +13,6 @@ public interface AsignacionRutinaRepository extends JpaRepository<AsignacionRuti
     List<AsignacionRutina> findByAlumnoId(Long alumnoId);
 
     Optional<AsignacionRutina> findByAlumnoIdAndRutinaId(Long alumnoId, Long rutinaId);
+
+    List<AsignacionRutina> findByRutinaId(Long id);
 }

@@ -192,6 +192,30 @@ public class RutinaService {
         rutinaRepository.save(rutina);
     }
 
+    public void eliminar(Long id){
+        Rutina rutina = rutinaRepository.findById(id).orElseThrow(()-> new IllegalArgumentException(
+                "Rutina no encontrada con ID: " + id
+        ));
+
+        //Valida si está asignada a alumnos
+        List<AsignacionRutina> asignaciones = asignacionRutinaRepository.findByRutinaId(id);
+
+        if (!asignaciones.isEmpty()) {
+            throw new IllegalArgumentException("No puedes eliminar una rutina asignada a " + asignaciones.size() + " alumnos!");
+        }
+
+
+        // 3. Eliminar todas las RutinaBloqueEjercicioSemana (datos semanales)
+        for (RutinaBloque rb : rutina.getRutinaBloques()) {
+            rutinaBloqueEjercicioSemanaRepository.deleteByRutinaBloqueId(rb.getId());
+        }
+        // 4. Limpiar la lista de bloques (desasocia pero NO elimina Bloque)
+        rutina.getRutinaBloques().clear();
+
+        // 5. Finalmente, eliminar la Rutina
+        rutinaRepository.delete(rutina);
+    }
+
 
 
     //---------------------------------

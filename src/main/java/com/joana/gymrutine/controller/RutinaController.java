@@ -236,8 +236,16 @@ public class RutinaController {
     }
 
     @GetMapping("/eliminar/{id}")
-    public String eliminarRutina(@PathVariable Long id) {
-        rutinaRepository.deleteById(id);
+    public String eliminarRutina(@PathVariable Long id,
+                                 RedirectAttributes redirectAttributes) {
+        try{
+            rutinaService.eliminar(id);
+            redirectAttributes.addFlashAttribute("success", "Rutina eliminada correctamente!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e){
+            redirectAttributes.addFlashAttribute("error", "Error al eliminar Rutina: " + e.getMessage());
+        }
         return "redirect:/rutinas";
     }
 
