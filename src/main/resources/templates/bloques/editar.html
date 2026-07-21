@@ -70,7 +70,8 @@
             <button type="button" class="btn btn-secondary" onclick="agregarFila()">+ Agregar Ejercicio</button>
         </div>
 
-        <button type="submit" class="btn btn-success">Actualizar</button>
+        <button type="submit" class="btn btn-success" th:formaction="@{/bloques/{id}(id=${id})}">Actualizar</button>
+        <button type="submit" class="btn btn-primary" th:formaction="@{/bloques/{id}/nuevo(id=${id})}">Guardar como nuevo bloque</button>
         <a href="/bloques" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>

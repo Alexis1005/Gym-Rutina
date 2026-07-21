@@ -113,4 +113,41 @@ public class BloqueController {
         return "redirect:/bloques";
     }
 
+    @PostMapping("/{id}/nuevo")
+    public String guardarComoNuevo(@Valid @ModelAttribute("bloqueDTO") BloqueActualizarDTO dto,
+                                   @PathVariable Long id,
+                                   BindingResult result, RedirectAttributes attributes, Model model) {
+        if (result.hasErrors()) {
+            model.addAttribute("gruposMusculares", grupoMuscularService.listar());
+            model.addAttribute("ejerciciosDisponibles", ejercicioService.listarDTO());
+            model.addAttribute("id", id);
+            return "bloques/editar";
+        }
+
+        var bloqueOriginal = bloqueService.listarPorId(id);
+
+        if (dto.getNombre().trim().equalsIgnoreCase(bloqueOriginal.getNombre())) {
+            model.addAttribute("error", "Para guardar como nuevo bloque, primero cambiá el nombre.");
+            model.addAttribute("gruposMusculares", grupoMuscularService.listar());
+            model.addAttribute("ejerciciosDisponibles", ejercicioService.listarDTO());
+            model.addAttribute("bloqueDTO", dto);
+            model.addAttribute("id", id);
+            return "bloques/editar";
+        }
+
+        try {
+            var nuevoDto = new BloqueCrearDTO(dto.getNombre().trim(), dto.getEjercicios(), null);
+            bloqueService.crear(nuevoDto);
+            attributes.addFlashAttribute("mensaje",
+                    "Nuevo bloque creado a partir de \"" + bloqueOriginal.getNombre() + "\".");
+            return "redirect:/bloques";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("gruposMusculares", grupoMuscularService.listar());
+            model.addAttribute("ejerciciosDisponibles", ejercicioService.listarDTO());
+            model.addAttribute("bloqueDTO", dto);
+            model.addAttribute("id", id);
+            return "bloques/editar";
+        }
+    }
 }
