@@ -30,6 +30,44 @@
             </select>
         </div>
 
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="tipoArticular" class="form-label">Tipo Articular</label>
+                <select class="form-control" id="tipoArticular" th:field="*{tipoArticular}">
+                    <option value="">No especifica</option>
+                    <option th:each="e : ${tiposArticulares}" th:value="${e}" th:text="${e}"></option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="cadenaCinetica" class="form-label">Cadena Cinética</label>
+                <select class="form-control" id="cadenaCinetica" th:field="*{cadenaCinetica}">
+                    <option value="">No especifica</option>
+                    <option th:each="e : ${cadenasCineticas}" th:value="${e}" th:text="${e}"></option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="lateralidad" class="form-label">Lateralidad</label>
+                <select class="form-control" id="lateralidad" th:field="*{lateralidad}">
+                    <option value="">No especifica</option>
+                    <option th:each="e : ${lateralidades}" th:value="${e}" th:text="${e}"></option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="elemento" class="form-label">Elemento</label>
+                <select class="form-control" id="elemento" th:field="*{elemento}">
+                    <option value="">No especifica</option>
+                    <option th:each="e : ${elementos}" th:value="${e}" th:text="${e}"></option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="posicion" class="form-label">Posición</label>
+                <select class="form-control" id="posicion" th:field="*{posicion}">
+                    <option value="">No especifica</option>
+                    <option th:each="e : ${posiciones}" th:value="${e}" th:text="${e}"></option>
+                </select>
+            </div>
+        </div>
+
         <button type="submit" class="btn btn-success">Actualizar</button>
         <a href="/ejercicios" class="btn btn-secondary">Cancelar</a>
     </form>

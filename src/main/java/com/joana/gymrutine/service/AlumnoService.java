@@ -78,7 +78,7 @@ public class AlumnoService {
      * Listar todos los alumnos
      */
     public List<AlumnoResponseDTO> listar() {
-        return alumnoRepository.findAll().stream()
+        return alumnoRepository.findAllByOrderByNombreApellidoAsc().stream()
                 .map(this::mapearAResponseDTO)
                 .collect(Collectors.toList());
     }

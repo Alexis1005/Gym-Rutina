@@ -1,19 +1,18 @@
 package com.joana.gymrutine.controller;
 
-import com.joana.gymrutine.dto.bloque.BloqueEjercicioDTO;
-import com.joana.gymrutine.dto.bloque.BloqueResponseDTO;
+import com.joana.gymrutine.dto.asignacionRutina.AsignacionRutinaCrearDTO;
 import com.joana.gymrutine.dto.rutina.*;
-import com.joana.gymrutine.model.Bloque;
 import com.joana.gymrutine.model.Rutina;
-import com.joana.gymrutine.model.RutinaBloque;
-import com.joana.gymrutine.model.RutinaBloqueEjercicioSemana;
-import com.joana.gymrutine.repository.BloqueRepository;
-import com.joana.gymrutine.repository.RutinaBloqueEjercicioSemanaRepository;
+import com.joana.gymrutine.model.RutinaEjercicio;
+import com.joana.gymrutine.model.RutinaEjercicioSemana;
+import com.joana.gymrutine.model.enums.*;
 import com.joana.gymrutine.repository.RutinaRepository;
+import com.joana.gymrutine.service.AlumnoService;
+import com.joana.gymrutine.service.AsignacionRutinaService;
+import com.joana.gymrutine.service.GrupoMuscularService;
 import com.joana.gymrutine.service.RutinaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -34,24 +33,21 @@ public class RutinaController {
     private RutinaService rutinaService;
 
     @Autowired
-    private BloqueRepository bloqueRepository;
-
-    @Autowired
     private RutinaRepository rutinaRepository;
 
     @Autowired
-    private RutinaBloqueEjercicioSemanaRepository rutinaBloqueEjercicioSemanaRepository;
+    private GrupoMuscularService grupoMuscularService;
+
+    @Autowired
+    private AlumnoService alumnoService;
+
+    @Autowired
+    private AsignacionRutinaService asignacionRutinaService;
 
     @GetMapping("/crear")
     public String mostrarFormularioCrear(Model model) {
-        List<Bloque> bloques = bloqueRepository.findAll();
-        List<BloqueResponseDTO> bloquesDTO = bloques.stream()
-                .map(this::mapearBloqueADTO)
-                .collect(Collectors.toList());
-
         model.addAttribute("rutina", new RutinaCrearDTO());
-        model.addAttribute("rutinaBloques", bloquesDTO);
-
+        agregarDatosParaSelectorDeEjercicios(model);
         return "rutina/crear";
     }
 
@@ -63,12 +59,7 @@ public class RutinaController {
             RedirectAttributes redirectAttributes
     ) {
         if (bindingResult.hasErrors()) {
-            List<Bloque> bloques = bloqueRepository.findAll();
-            List<BloqueResponseDTO> bloquesDTO = bloques.stream()
-                    .map(this::mapearBloqueADTO)
-                    .collect(Collectors.toList());
-
-            model.addAttribute("rutinaBloques", bloquesDTO);
+            agregarDatosParaSelectorDeEjercicios(model);
             return "rutina/crear";
         }
 
@@ -78,32 +69,9 @@ public class RutinaController {
             return "redirect:/rutinas/" + rutina.getId();
         } catch (IllegalArgumentException e) {
             bindingResult.reject("error.general", e.getMessage());
-
-            List<Bloque> bloques = bloqueRepository.findAll();
-            List<BloqueResponseDTO> bloquesDTO = bloques.stream()
-                    .map(this::mapearBloqueADTO)
-                    .collect(Collectors.toList());
-
-            model.addAttribute("rutinaBloques", bloquesDTO);
+            agregarDatosParaSelectorDeEjercicios(model);
             return "rutina/crear";
         }
-    }
-
-    private BloqueResponseDTO mapearBloqueADTO(Bloque bloque) {
-        BloqueResponseDTO dto = new BloqueResponseDTO();
-        dto.setId(bloque.getId());
-        dto.setNombre(bloque.getNombre());
-        dto.setEjercicios(bloque.getBloqueEjercicio().stream()
-                .map(be -> {
-                    BloqueEjercicioDTO ejercicioDTO = new BloqueEjercicioDTO();
-                    ejercicioDTO.setEjercicioId(be.getEjercicio().getId());
-                    ejercicioDTO.setNombreEjercicio(be.getEjercicio().getNombre());
-                    ejercicioDTO.setSeries(be.getSeries());
-                    ejercicioDTO.setDescansoMinutos(be.getDescansoMinutos());
-                    return ejercicioDTO;
-                })
-                .collect(Collectors.toList()));
-        return dto;
     }
 
     @GetMapping("/{id}")
@@ -111,27 +79,52 @@ public class RutinaController {
         Rutina rutina = rutinaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"));
 
-        // Obtener todas las semanas cargadas para esta rutina
-        List<RutinaBloqueEjercicioSemana> semanas =
-                rutinaBloqueEjercicioSemanaRepository.findByRutinaId(id);
-
-        // Crear mapa: bloque.id → ejercicio.id → semana → objeto
-        Map<Long, Map<Long, Map<Integer, RutinaBloqueEjercicioSemana>>> semanasMap = new HashMap<>();
-
-        for (RutinaBloqueEjercicioSemana semana : semanas) {
-            Long bloqueId = semana.getRutinaBloque().getId();
-            Long ejercicioId = semana.getBloqueEjercicio().getId();
-            Integer numeroSemana = semana.getNumeroSemana();
-
-            semanasMap.putIfAbsent(bloqueId, new HashMap<>());
-            semanasMap.get(bloqueId).putIfAbsent(ejercicioId, new HashMap<>());
-            semanasMap.get(bloqueId).get(ejercicioId).put(numeroSemana, semana);
-        }
-
         model.addAttribute("rutina", rutina);
-        model.addAttribute("semanasMap", semanasMap);
+        model.addAttribute("diasDetalle", agruparEjerciciosPorDia(rutina));
+        model.addAttribute("alumnosDisponibles", alumnoService.listar());
 
         return "rutina/detalle";
+    }
+
+    /**
+     * Agrupa los RutinaEjercicio de una rutina por día, ordenados por día y por
+     * orden dentro del día, en una estructura plana (List<Map>) fácil de recorrer
+     * desde Thymeleaf sin necesitar lógica de agrupación en el template.
+     */
+    private List<Map<String, Object>> agruparEjerciciosPorDia(Rutina rutina) {
+        Map<Integer, List<RutinaEjercicio>> porDia = rutina.getRutinaEjercicios().stream()
+                .collect(Collectors.groupingBy(RutinaEjercicio::getDia));
+
+        return porDia.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> {
+                    Map<String, Object> diaMap = new HashMap<>();
+                    diaMap.put("dia", entry.getKey());
+                    diaMap.put("ejercicios", entry.getValue().stream()
+                            .sorted(Comparator.comparingInt(RutinaEjercicio::getOrden))
+                            .map(re -> {
+                                Map<String, Object> ejMap = new HashMap<>();
+                                ejMap.put("nombreEjercicio", re.getEjercicio().getNombre());
+                                ejMap.put("orden", re.getOrden());
+                                ejMap.put("semanas", re.getSemanas().stream()
+                                        .sorted(Comparator.comparingInt(RutinaEjercicioSemana::getSemana))
+                                        .map(s -> {
+                                            Map<String, Object> semMap = new HashMap<>();
+                                            semMap.put("semana", s.getSemana());
+                                            semMap.put("series", s.getSeries());
+                                            semMap.put("repeticiones", s.getRepeticiones());
+                                            semMap.put("pesoKg", s.getPesoKg());
+                                            semMap.put("descansoMinutos", s.getDescansoMinutos());
+                                            semMap.put("rir", s.getRir());
+                                            return semMap;
+                                        })
+                                        .collect(Collectors.toList()));
+                                return ejMap;
+                            })
+                            .collect(Collectors.toList()));
+                    return diaMap;
+                })
+                .collect(Collectors.toList());
     }
 
     @GetMapping
@@ -146,39 +139,15 @@ public class RutinaController {
         Rutina rutina = rutinaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"));
 
-        // Cargar bloques disponibles (todos los de la BD)
-        List<Bloque> bloquesDisponibles = bloqueRepository.findAll();
-        List<BloqueResponseDTO> bloquesDTO = bloquesDisponibles.stream()
-                .map(this::mapearBloqueADTO)
-                .collect(Collectors.toList());
-
-        // Convertir bloques actuales a DTO para el formulario
-        List<RutinaBloqueActualizarDTO> bloquesActualesDTO = rutina.getRutinaBloques().stream()
-                .map(rb -> new RutinaBloqueActualizarDTO(rb.getBloque().getId(), rb.getOrden()))
-                .sorted(Comparator.comparingInt(RutinaBloqueActualizarDTO::getOrden))
-                .collect(Collectors.toList());
-
-        // Convertir a DTO de actualización
         RutinaActualizarDTO dto = new RutinaActualizarDTO();
         dto.setNombre(rutina.getNombre());
         dto.setDescripcion(rutina.getDescripcion());
-        dto.setBloques(bloquesActualesDTO);
+        dto.setEjercicios(mapearAEjerciciosDTO(rutina));
 
-        List<Map<String, Object>> bloquesParaJS = rutina.getRutinaBloques().stream()
-                .map(rb -> {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("bloqueId", rb.getBloque().getId());
-                    map.put("nombreBloque", rb.getBloque().getNombre());
-                    map.put("orden", rb.getOrden());
-                    return map;
-                })
-                .sorted(Comparator.comparingInt(m -> (Integer) m.get("orden")))
-                .collect(Collectors.toList());
-
-        model.addAttribute("bloquesJS", bloquesParaJS);
         model.addAttribute("rutina", rutina);
         model.addAttribute("rutinaActualizar", dto);
-        model.addAttribute("rutinaBloques", bloquesDTO);
+        model.addAttribute("ejerciciosJS", mapearAEjerciciosParaJS(rutina));
+        agregarDatosParaSelectorDeEjercicios(model);
 
         return "rutina/editar";
     }
@@ -194,43 +163,21 @@ public class RutinaController {
         if (result.hasErrors()) {
             Rutina rutina = rutinaRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"));
-
-            List<Bloque> bloquesDisponibles = bloqueRepository.findAll();
-            List<BloqueResponseDTO> bloquesDTO = bloquesDisponibles.stream()
-                    .map(this::mapearBloqueADTO)
-                    .collect(Collectors.toList());
-
             model.addAttribute("rutina", rutina);
-            model.addAttribute("rutinaBloques", bloquesDTO);
+            agregarDatosParaSelectorDeEjercicios(model);
             return "rutina/editar";
         }
 
         try {
-            Rutina rutina = rutinaRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"));
-
-            // Actualizar nombre y descripción
-            rutina.setNombre(dto.getNombre());
-            rutina.setDescripcion(dto.getDescripcion());
-            rutinaRepository.save(rutina);
-
-            // Actualizar bloques (agregar, quitar, reordenar)
-            rutinaService.actualizarBloques(id, dto.getBloques());
-
+            rutinaService.actualizarRutina(id, dto);
             redirectAttributes.addFlashAttribute("mensaje", "Rutina actualizada correctamente");
             return "redirect:/rutinas/" + id;
         } catch (IllegalArgumentException e) {
             result.reject("error.general", e.getMessage());
             Rutina rutina = rutinaRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"));
-
-            List<Bloque> bloquesDisponibles = bloqueRepository.findAll();
-            List<BloqueResponseDTO> bloquesDTO = bloquesDisponibles.stream()
-                    .map(this::mapearBloqueADTO)
-                    .collect(Collectors.toList());
-
             model.addAttribute("rutina", rutina);
-            model.addAttribute("rutinaBloques", bloquesDTO);
+            agregarDatosParaSelectorDeEjercicios(model);
             return "rutina/editar";
         }
     }
@@ -249,119 +196,104 @@ public class RutinaController {
         return "redirect:/rutinas";
     }
 
-    @GetMapping("/{id}/cargar-progresion")
-    public String mostrarFormularioProgresion(@PathVariable Long id, Model model) {
-        Rutina rutina = rutinaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"));
+    @PostMapping("/{id}/asignar-alumno")
+    public String asignarAlumno(@PathVariable Long id, @RequestParam Long alumnoId, RedirectAttributes redirectAttributes){
+        AsignacionRutinaCrearDTO dto = new AsignacionRutinaCrearDTO();
+        dto.setAlumnoId(alumnoId);
+        dto.setRutinaId(id);
 
-        List<RutinaBloqueEjercicioSemana> semanasExistentes = rutinaBloqueEjercicioSemanaRepository.findByRutinaId(id);
+        try{
+            asignacionRutinaService.asignarRutina(dto);
+            redirectAttributes.addFlashAttribute("mensaje", "Rutina asignada correctamente!");
+        } catch (IllegalArgumentException e){
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/rutinas/" + id;
+    }
 
-        // Convertir a DTO para enviar al template
-        List<RutinaBloqueEjercicioSemanaDTO> semanasDTO = semanasExistentes.stream()
-                .map(s -> new RutinaBloqueEjercicioSemanaDTO(
-                        s.getRutinaBloque().getId(),
-                        s.getBloqueEjercicio().getId(),
-                        s.getNumeroSemana(),
-                        s.getRepeticiones(),
-                        s.getPesoKg()
-                ))
+    //---------------------------------
+    //------------HELPERS---------------
+    //---------------------------------
+
+    /**
+     * Carga en el Model todo lo que necesita el selector de ejercicios del formulario
+     * (grupos musculares + valores de los enums para los filtros).
+     */
+    private void agregarDatosParaSelectorDeEjercicios(Model model) {
+        model.addAttribute("gruposMusculares", grupoMuscularService.listar());
+        model.addAttribute("tiposArticulares", TipoArticular.values());
+        model.addAttribute("cadenasCineticas", CadenaCinetica.values());
+        model.addAttribute("lateralidades", Lateralidad.values());
+        model.addAttribute("elementos", Elemento.values());
+        model.addAttribute("posiciones", Posicion.values());
+    }
+
+    /**
+     * Convierte los RutinaEjercicio ya cargados en una Rutina existente
+     * a la misma forma de DTO que usa el formulario de crear (RutinaEjercicioDTO),
+     * para precargar el formulario de edición.
+     */
+    private List<RutinaEjercicioDTO> mapearAEjerciciosDTO(Rutina rutina) {
+        return rutina.getRutinaEjercicios().stream()
+                .sorted(Comparator.comparing(RutinaEjercicio::getDia)
+                        .thenComparing(RutinaEjercicio::getOrden))
+                .map(re -> {
+                    RutinaEjercicioDTO dto = new RutinaEjercicioDTO();
+                    dto.setEjercicioId(re.getEjercicio().getId());
+                    dto.setDia(re.getDia());
+                    dto.setOrden(re.getOrden());
+                    dto.setSemanas(re.getSemanas().stream()
+                            .sorted(Comparator.comparing(s -> s.getSemana()))
+                            .map(s -> {
+                                RutinaEjercicioSemanaDTO semDto = new RutinaEjercicioSemanaDTO();
+                                semDto.setSemana(s.getSemana());
+                                semDto.setSeries(s.getSeries());
+                                semDto.setRepeticiones(s.getRepeticiones());
+                                semDto.setPesoKg(s.getPesoKg());
+                                semDto.setDescansoMinutos(s.getDescansoMinutos());
+                                semDto.setRir(s.getRir());
+                                semDto.setCadencia(s.getCadencia());
+                                semDto.setMetodo(s.getMetodo());
+                                return semDto;
+                            })
+                            .collect(Collectors.toList()));
+                    return dto;
+                })
                 .collect(Collectors.toList());
-
-        CargarProgresionDTO cargarDTO = new CargarProgresionDTO();
-        cargarDTO.setSemanas(semanasDTO);
-
-        model.addAttribute("rutina", rutina);
-        model.addAttribute("cargarProgresion", cargarDTO);
-
-        return "rutina/cargar-progresion";
     }
 
-    @PostMapping("/{id}/cargar-progresion")
-    public String cargarProgresion(
-            @PathVariable Long id,
-            @Valid @ModelAttribute("cargarProgresion") CargarProgresionDTO dto,
-            BindingResult result,
-            Model model,
-            RedirectAttributes redirectAttributes
-    ) {
-        if (result.hasErrors()) {
-            Rutina rutina = rutinaRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"));
-            model.addAttribute("rutina", rutina);
-            return "rutina/cargar-progresion";
-        }
-
-        try {
-            rutinaService.cargarProgresionSemanas(id, dto.getSemanas());
-            redirectAttributes.addFlashAttribute("mensaje", "Progresión cargada correctamente");
-            return "redirect:/rutinas/" + id;
-        } catch (IllegalArgumentException e) {
-            result.reject("error.general", e.getMessage());
-            Rutina rutina = rutinaRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"));
-            model.addAttribute("rutina", rutina);
-            return "rutina/cargar-progresion";
-        }
-    }
-
-    @GetMapping("/{id}/bloque/{bloqueId}/cargar")
-    public String mostrarFormularioProgresionBloque(@PathVariable Long id, @PathVariable Long bloqueId, Model model) {
-        Rutina rutina = rutinaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"));
-
-        // Validar que el bloque pertenece a esta rutina
-        RutinaBloque rutinaBloque = rutina.getRutinaBloques().stream()
-                .filter(rb -> rb.getId().equals(bloqueId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("El bloque no pertenece a esta rutina"));
-
-        // Obtener datos existentes del bloque
-        List<RutinaBloqueEjercicioSemana> semanasBloque =
-                rutinaBloqueEjercicioSemanaRepository.findByRutinaBloqueId(bloqueId);
-
-        // Convertir a DTO
-        List<RutinaBloqueEjercicioSemanaDTO> semanasDTO = semanasBloque.stream()
-                .map(s -> new RutinaBloqueEjercicioSemanaDTO(
-                        s.getRutinaBloque().getId(),
-                        s.getBloqueEjercicio().getId(),
-                        s.getNumeroSemana(),
-                        s.getRepeticiones(),
-                        s.getPesoKg()
-                ))
+    /**
+     * Misma información que mapearAEjerciciosDTO, pero en Map plano
+     * (más fácil de consumir desde JS en el template de edición, junto
+     * con el nombre del ejercicio que el DTO no trae).
+     */
+    private List<Map<String, Object>> mapearAEjerciciosParaJS(Rutina rutina) {
+        return rutina.getRutinaEjercicios().stream()
+                .sorted(Comparator.comparing(RutinaEjercicio::getDia)
+                        .thenComparing(RutinaEjercicio::getOrden))
+                .map(re -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("ejercicioId", re.getEjercicio().getId());
+                    map.put("nombreEjercicio", re.getEjercicio().getNombre());
+                    map.put("dia", re.getDia());
+                    map.put("orden", re.getOrden());
+                    map.put("semanas", re.getSemanas().stream()
+                            .sorted(Comparator.comparing(s -> s.getSemana()))
+                            .map(s -> {
+                                Map<String, Object> semMap = new HashMap<>();
+                                semMap.put("semana", s.getSemana());
+                                semMap.put("series", s.getSeries());
+                                semMap.put("repeticiones", s.getRepeticiones());
+                                semMap.put("pesoKg", s.getPesoKg());
+                                semMap.put("descansoMinutos", s.getDescansoMinutos());
+                                semMap.put("rir", s.getRir());
+                                semMap.put("cadencia", s.getCadencia());
+                                semMap.put("metodo", s.getMetodo());
+                                return semMap;
+                            })
+                            .collect(Collectors.toList()));
+                    return map;
+                })
                 .collect(Collectors.toList());
-
-        CargarProgresionDTO cargarDTO = new CargarProgresionDTO();
-        cargarDTO.setSemanas(semanasDTO);
-
-        model.addAttribute("rutina", rutina);
-        model.addAttribute("rutinaBloque", rutinaBloque);
-        model.addAttribute("cargarProgresion", cargarDTO);
-
-        return "rutina/cargar-progresion-bloque";
-    }
-
-    @PostMapping("/{id}/bloque/{bloqueId}/cargar")
-    public ResponseEntity<Map<String, String>> cargarProgresionBloque(
-            @PathVariable Long id,
-            @PathVariable Long bloqueId,
-            @RequestBody CargarProgresionDTO dto
-    ) {
-        try {
-            Rutina rutina = rutinaRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"));
-
-            // Validar que el bloque pertenece a esta rutina
-            rutina.getRutinaBloques().stream()
-                    .filter(rb -> rb.getId().equals(bloqueId))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("El bloque no pertenece a esta rutina"));
-
-            // Guardar progresión
-            rutinaService.cargarProgresionSemanas(id, dto.getSemanas());
-
-            return ResponseEntity.ok(Map.of("mensaje", "Progresión cargada correctamente"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
     }
 }

@@ -24,7 +24,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
         <a class="navbar-brand fw-bold" href="/dashboard">
-            <img th:src="@{/images/JRGym.png}" width="60px" height="25" alt="Logo"> GymRutine
+            <img th:src="@{/images/JRGym.png}" width="130px" height="40" alt="Logo"> GymRutine
         </a>
 
         <div class="ms-auto">
@@ -79,19 +79,19 @@
             </div>
         </div>
 
-        <!-- BLOQUES -->
+        <!-- Grupos Musculares -->
         <div class="col-md-4">
             <div class="card shadow-sm card-hover h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Días</h5>
-                    <p class="text-muted">Días reutilizables</p>
+                    <h5 class="card-title">Grupos Musculares</h5>
+                    <p class="text-muted">Gestionar grupos musculares</p>
 
-                    <a href="/bloques" class="btn btn-success w-100 mb-2">
-                        Ver días
+                    <a href="/grupos-musculares" class="btn btn-danger w-100 mb-2">
+                        Ver grupos musculares
                     </a>
 
-                    <a href="/bloques/crear" class="btn btn-outline-success w-100">
-                        Crear día
+                    <a href="/grupos-musculares/crear" class="btn btn-outline-danger w-100">
+                        Crear grupo muscular
                     </a>
                 </div>
             </div>
@@ -115,23 +115,6 @@
             </div>
         </div>
 
-        <!-- Grupos Musculares -->
-        <div class="col-md-4">
-            <div class="card shadow-sm card-hover h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Grupos Musculares</h5>
-                    <p class="text-muted">Gestionar grupos musculares</p>
-
-                    <a href="/grupos-musculares" class="btn btn-danger w-100 mb-2">
-                        Ver grupos musculares
-                    </a>
-
-                    <a href="/grupos-musculares/crear" class="btn btn-outline-danger w-100">
-                        Crear grupo muscular
-                    </a>
-                </div>
-            </div>
-        </div>
 
 
     </div>

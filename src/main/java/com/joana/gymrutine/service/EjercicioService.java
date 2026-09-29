@@ -5,8 +5,9 @@ import com.joana.gymrutine.dto.ejercicio.EjercicioCrearDTO;
 import com.joana.gymrutine.dto.ejercicio.EjercicioResponseDTO;
 import com.joana.gymrutine.exception.EntityNotDeletableException;
 import com.joana.gymrutine.model.Ejercicio;
-import com.joana.gymrutine.repository.BloqueEjercicioRepository;
+import com.joana.gymrutine.model.enums.*;
 import com.joana.gymrutine.repository.EjercicioRepository;
+import com.joana.gymrutine.repository.RutinaEjercicioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class EjercicioService {
     @Autowired
     private GrupoMuscularService grupoMuscularService;
     @Autowired
-    private BloqueEjercicioRepository bloqueEjercicioRepository;
+    private RutinaEjercicioRepository rutinaEjercicioRepository;
 
     public Ejercicio crear(EjercicioCrearDTO dto) {
 
@@ -36,6 +37,11 @@ public class EjercicioService {
         ejercicio.setNombre(dto.getNombre().trim());
         ejercicio.setDescripcion(dto.getDescripcion().trim());
         ejercicio.setGrupoMuscular(grupoId);
+        ejercicio.setTipoArticular(dto.getTipoArticular());
+        ejercicio.setCadenaCinetica(dto.getCadenaCinetica());
+        ejercicio.setLateralidad(dto.getLateralidad());
+        ejercicio.setElemento(dto.getElemento());
+        ejercicio.setPosicion(dto.getPosicion());
         return ejercicioRepository.save(ejercicio);
     }
 
@@ -55,6 +61,11 @@ public class EjercicioService {
                     dto.setDescripcion(e.getDescripcion());
                     dto.setGrupoMuscularNombre(e.getGrupoMuscular().getNombre());
                     dto.setGrupoMuscularId(e.getGrupoMuscular().getId());
+                    dto.setTipoArticular(e.getTipoArticular());
+                    dto.setCadenaCinetica(e.getCadenaCinetica());
+                    dto.setLateralidad(e.getLateralidad());
+                    dto.setElemento(e.getElemento());
+                    dto.setPosicion(e.getPosicion());
                     return dto;
                 })
                 .toList();
@@ -101,6 +112,11 @@ public class EjercicioService {
         var ejercicioActualizado = ejercicio.get();
         ejercicioActualizado.setNombre(dto.getNombre().trim());
         ejercicioActualizado.setDescripcion(dto.getDescripcion().trim());
+        ejercicioActualizado.setTipoArticular(dto.getTipoArticular());
+        ejercicioActualizado.setCadenaCinetica(dto.getCadenaCinetica());
+        ejercicioActualizado.setLateralidad(dto.getLateralidad());
+        ejercicioActualizado.setElemento(dto.getElemento());
+        ejercicioActualizado.setPosicion(dto.getPosicion());
 
         if (dto.getGrupoMuscularId() != null) {
             var grupo = grupoMuscularService.listarPorId(dto.getGrupoMuscularId());
@@ -110,6 +126,30 @@ public class EjercicioService {
     }
 
     //-----------------------------------------------------
+    public List<EjercicioResponseDTO> buscarConFiltros(
+            Long grupoMuscularId, TipoArticular tipoArticular, CadenaCinetica cadenaCinetica,
+            Lateralidad lateralidad, Elemento elemento, Posicion posicion) {
+
+        return ejercicioRepository.buscarConFiltros(
+                        grupoMuscularId, tipoArticular, cadenaCinetica, lateralidad, elemento, posicion)
+                .stream()
+                .map(e -> {
+                    EjercicioResponseDTO dto = new EjercicioResponseDTO();
+                    dto.setId(e.getId());
+                    dto.setNombre(e.getNombre());
+                    dto.setDescripcion(e.getDescripcion());
+                    dto.setGrupoMuscularNombre(e.getGrupoMuscular().getNombre());
+                    dto.setGrupoMuscularId(e.getGrupoMuscular().getId());
+                    dto.setTipoArticular(e.getTipoArticular());
+                    dto.setCadenaCinetica(e.getCadenaCinetica());
+                    dto.setLateralidad(e.getLateralidad());
+                    dto.setElemento(e.getElemento());
+                    dto.setPosicion(e.getPosicion());
+                    return dto;
+                })
+                .toList();
+    }
+    //-----------------------------------------------------
     public void eliminar(Long id) {
 
         var ejercicio = ejercicioRepository.findById(id);
@@ -117,10 +157,10 @@ public class EjercicioService {
             throw new IllegalArgumentException("Ejercicio no encontrado con el id: " + id);
         }
 
-        boolean estaIncluido = bloqueEjercicioRepository.existsByBloqueId(id);
+        boolean estaIncluido = rutinaEjercicioRepository.existsByEjercicioId(id);
         if (estaIncluido) {
             throw new EntityNotDeletableException("No se puede eliminar el ejercicio! Está incluido "+
-                    "en un día creado.");
+                    "en una rutina creada.");
         }
         ejercicioRepository.deleteById(id);
     }

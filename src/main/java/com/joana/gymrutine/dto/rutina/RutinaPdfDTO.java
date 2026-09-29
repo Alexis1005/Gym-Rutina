@@ -18,14 +18,13 @@ public class RutinaPdfDTO {
     private String observacionesRutina;
     private Integer cantidadSemanas;
 
-    private List<BloquePdfDTO> bloques;
+    private List<DiaPdfDTO> dias;
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class BloquePdfDTO {
-        private String nombreBloque;
-        private Integer orden;
+    public static class DiaPdfDTO {
+        private Integer dia;
         private List<EjercicioPdfDTO> ejercicios;
     }
 
@@ -34,8 +33,7 @@ public class RutinaPdfDTO {
     @AllArgsConstructor
     public static class EjercicioPdfDTO {
         private String nombreEjercicio;
-        private Integer series;
-        private String descansoMinutos;
+        private Integer orden;
         private List<SemanaPdfDTO> semanas;
     }
 
@@ -44,7 +42,10 @@ public class RutinaPdfDTO {
     @AllArgsConstructor
     public static class SemanaPdfDTO {
         private Integer numeroSemana;
+        private Integer series;
         private String repeticiones;
         private String pesoKg;
+        private String descansoMinutos;
+        private Integer rir;
     }
 }

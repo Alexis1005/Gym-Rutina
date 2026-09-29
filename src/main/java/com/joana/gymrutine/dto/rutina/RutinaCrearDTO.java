@@ -1,5 +1,6 @@
 package com.joana.gymrutine.dto.rutina;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -23,6 +24,11 @@ public class RutinaCrearDTO {
     @Min(1)
     private Integer cantidadSemanas;
 
-    @NotEmpty
-    private List<RutinaBloqueDTO> bloques;
+    @NotNull
+    @Min(1)
+    private Integer cantidadDias;
+
+    @NotEmpty(message = "Debe agregar al menos un ejercicio")
+    @Valid
+    private List<RutinaEjercicioDTO> ejercicios;
 }

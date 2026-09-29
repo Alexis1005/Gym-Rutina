@@ -1,10 +1,8 @@
 package com.joana.gymrutine.model;
 
-
+import com.joana.gymrutine.model.enums.*;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -23,8 +21,22 @@ public class Ejercicio {
     private String nombre;
     private String descripcion;
 
-    @OneToMany(mappedBy = "ejercicio", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BloqueEjercicio> bloqueEjercicio;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_articular")
+    private TipoArticular tipoArticular;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cadena_cinetica")
+    private CadenaCinetica cadenaCinetica;
+
+    @Enumerated(EnumType.STRING)
+    private Lateralidad lateralidad;
+
+    @Enumerated(EnumType.STRING)
+    private Elemento elemento;
+
+    @Enumerated(EnumType.STRING)
+    private Posicion posicion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grupo_muscular_id", nullable = false)

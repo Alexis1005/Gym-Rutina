@@ -1,10 +1,7 @@
 package com.joana.gymrutine.dto.ejercicio;
 
-import com.joana.gymrutine.model.BloqueEjercicio;
-import jakarta.validation.constraints.NotBlank;
+import com.joana.gymrutine.model.enums.*;
 import lombok.*;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -18,4 +15,10 @@ public class EjercicioResponseDTO {
     private String descripcion;
     private String grupoMuscularNombre;
     private Long grupoMuscularId;
+
+    private TipoArticular tipoArticular;
+    private CadenaCinetica cadenaCinetica;
+    private Lateralidad lateralidad;
+    private Elemento elemento;
+    private Posicion posicion;
 }

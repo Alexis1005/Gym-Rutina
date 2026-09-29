@@ -1,26 +1,26 @@
 package com.joana.gymrutine.dto.rutina;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.util.List;
-
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RutinaActualizarDTO{
+public class RutinaActualizarDTO {
 
     @NotBlank(message = "El nombre de la rutina es obligatorio")
     private String nombre;
+
     private String descripcion;
-    @NotEmpty(message = "Debe mantener al menos un bloque")
+
+    @NotEmpty(message = "Debe mantener al menos un ejercicio")
     @Valid
-    private List<RutinaBloqueActualizarDTO> bloques;
+    private List<RutinaEjercicioDTO> ejercicios;
 }

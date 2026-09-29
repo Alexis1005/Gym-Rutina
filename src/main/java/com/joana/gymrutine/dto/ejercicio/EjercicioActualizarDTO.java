@@ -1,5 +1,6 @@
 package com.joana.gymrutine.dto.ejercicio;
 
+import com.joana.gymrutine.model.enums.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -14,4 +15,10 @@ public class EjercicioActualizarDTO {
     private String nombre;
     private String descripcion;
     private Long grupoMuscularId;
+
+    private TipoArticular tipoArticular;
+    private CadenaCinetica cadenaCinetica;
+    private Lateralidad lateralidad;
+    private Elemento elemento;
+    private Posicion posicion;
 }

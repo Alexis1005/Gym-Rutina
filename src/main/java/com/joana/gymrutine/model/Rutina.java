@@ -1,10 +1,8 @@
 package com.joana.gymrutine.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -24,9 +22,10 @@ public class Rutina {
     private String nombre;
     private String descripcion;
     private Integer cantidadSemanas;
+    private Integer cantidadDias;
 
     @OneToMany(mappedBy = "rutina",  cascade = CascadeType.ALL, orphanRemoval = true)
-    List<RutinaBloque> rutinaBloques;
+    List<RutinaEjercicio> rutinaEjercicios;
 
     @OneToMany(mappedBy = "rutina",  cascade = CascadeType.ALL, orphanRemoval = true)
     List<AsignacionRutina> asignacionRutinas;

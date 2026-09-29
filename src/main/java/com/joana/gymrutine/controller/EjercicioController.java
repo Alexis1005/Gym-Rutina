@@ -2,7 +2,9 @@ package com.joana.gymrutine.controller;
 
 import com.joana.gymrutine.dto.ejercicio.EjercicioActualizarDTO;
 import com.joana.gymrutine.dto.ejercicio.EjercicioCrearDTO;
+import com.joana.gymrutine.dto.ejercicio.EjercicioResponseDTO;
 import com.joana.gymrutine.model.Ejercicio;
+import com.joana.gymrutine.model.enums.*;
 import com.joana.gymrutine.service.EjercicioService;
 import com.joana.gymrutine.service.GrupoMuscularService;
 import jakarta.validation.Valid;
@@ -37,6 +39,7 @@ public class EjercicioController {
     public String mostrarFormulario(Model model) {
         model.addAttribute("ejercicioDTO", new EjercicioCrearDTO());
         model.addAttribute("gruposMusculares", grupoMuscularService.listar());
+        agregarEnumsAlModelo(model);
         return "ejercicios/crear";
     }
 
@@ -55,13 +58,21 @@ public class EjercicioController {
     public String mostrarFormulario(@PathVariable Long id, Model model) {
 
         var ejercicio = ejercicioService.listarPorId(id);
-        model.addAttribute("ejercicioDTO", new EjercicioActualizarDTO(
-                ejercicio.getNombre(),
-                ejercicio.getDescripcion(),
-                ejercicio.getGrupoMuscular().getId()
-        ));
+
+        var dto = new EjercicioActualizarDTO();
+        dto.setNombre(ejercicio.getNombre());
+        dto.setDescripcion(ejercicio.getDescripcion());
+        dto.setGrupoMuscularId(ejercicio.getGrupoMuscular().getId());
+        dto.setTipoArticular(ejercicio.getTipoArticular());
+        dto.setCadenaCinetica(ejercicio.getCadenaCinetica());
+        dto.setLateralidad(ejercicio.getLateralidad());
+        dto.setElemento(ejercicio.getElemento());
+        dto.setPosicion(ejercicio.getPosicion());
+
+        model.addAttribute("ejercicioDTO", dto);
         model.addAttribute("id", id);
         model.addAttribute("gruposMusculares", grupoMuscularService.listar()); //---> Para el select
+        agregarEnumsAlModelo(model);
         return "ejercicios/editar";
     }
 
@@ -87,5 +98,32 @@ public class EjercicioController {
     public ResponseEntity<List<Ejercicio>> porGrupo(@PathVariable Long grupoId) {
         var ejercicios = ejercicioService.listarPorGrupo(grupoId);
         return ResponseEntity.ok(ejercicios);
+    }
+
+    /**
+     * Búsqueda combinada para el selector de ejercicios al armar una rutina.
+     * Todos los filtros son opcionales.
+     */
+    @GetMapping("/buscar")
+    @ResponseBody
+    public ResponseEntity<List<EjercicioResponseDTO>> buscar(
+            @RequestParam(required = false) Long grupoMuscularId,
+            @RequestParam(required = false) TipoArticular tipoArticular,
+            @RequestParam(required = false) CadenaCinetica cadenaCinetica,
+            @RequestParam(required = false) Lateralidad lateralidad,
+            @RequestParam(required = false) Elemento elemento,
+            @RequestParam(required = false) Posicion posicion) {
+
+        var ejercicios = ejercicioService.buscarConFiltros(
+                grupoMuscularId, tipoArticular, cadenaCinetica, lateralidad, elemento, posicion);
+        return ResponseEntity.ok(ejercicios);
+    }
+
+    private void agregarEnumsAlModelo(Model model) {
+        model.addAttribute("tiposArticulares", TipoArticular.values());
+        model.addAttribute("cadenasCineticas", CadenaCinetica.values());
+        model.addAttribute("lateralidades", Lateralidad.values());
+        model.addAttribute("elementos", Elemento.values());
+        model.addAttribute("posiciones", Posicion.values());
     }
 }
