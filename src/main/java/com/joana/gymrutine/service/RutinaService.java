@@ -264,6 +264,29 @@ public class RutinaService {
     }
 
     /**
+     * Escribe el nombre del alumno en vertical sobre el margen izquierdo de la primera página,
+     * para que se lea al guardar la hoja doblada en un fichero.
+     */
+    private void agregarNombreEnMargen(Document document, PdfDocument pdf, String nombreAlumno) {
+        float anchoPagina = PageSize.A4.rotate().getWidth();
+        float anchoUtil = anchoPagina - 12;                       // márgenes de 6 + 6
+        float anchoTabla = anchoUtil * ANCHO_PDF / 100f;
+        float espacioIzquierdo = 6 + (anchoUtil - anchoTabla) / 2;
+        float x = espacioIzquierdo / 2;                           // centrado en el espacio libre
+
+        float alto = pdf.getPage(1).getPageSize().getHeight();
+
+        Paragraph nombre = new Paragraph(nombreAlumno)
+                .setBold()
+                .setFontSize(11)
+                .setFontColor(AZUL_MARINO);
+
+        document.showTextAligned(nombre, x, alto / 2, 1,
+                TextAlignment.CENTER, VerticalAlignment.MIDDLE,
+                (float) (Math.PI / 2));                           // 90°: se lee de abajo hacia arriba
+    }
+
+    /**
      * Generar PDF con iText7 - HORIZONTAL (LANDSCAPE) CON PAGINACIÓN AUTOMÁTICA
      */
     @Transactional(readOnly = true)
@@ -278,7 +301,8 @@ public class RutinaService {
             // A4 horizontal
             pdf.setDefaultPageSize(PageSize.A4.rotate());
 
-            Document document = new Document(pdf);
+            // Sin vaciado inmediato, para poder escribir sobre la página ya armada
+            Document document = new Document(pdf, pdf.getDefaultPageSize(), false);
             document.setMargins(6, 6, 6, 6);
 
             // 1. HEADER CON NOMBRE, FECHA Y ESPACIO PARA LOGO
@@ -300,6 +324,9 @@ public class RutinaService {
                 crearDia(document, dia, datos.getCantidadSemanas());
                 diasEnPagina++;
             }
+
+            // 4. NOMBRE DEL ALUMNO EN EL MARGEN IZQUIERDO (solo primera página)
+            agregarNombreEnMargen(document, pdf, datos.getNombreAlumno());
 
             document.close();
             return baos.toByteArray();
