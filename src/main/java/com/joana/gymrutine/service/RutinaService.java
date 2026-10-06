@@ -311,18 +311,16 @@ public class RutinaService {
             // 2. NOMBRE RUTINA Y OBSERVACIONES
             crearSeccionRutina(document, datos);
 
-            // 3. DÍAS CON EJERCICIOS - CON PAGINACIÓN AUTOMÁTICA
-            int diasEnPagina = 0;
-            final int MAX_DIAS_POR_PAGINA = 2;
+            // 3. DÍAS CON EJERCICIOS
+            // Página 1: los primeros 2 días (como hasta ahora). Página 2: todos los restantes.
+            final int DIAS_PAGINA_1 = 2;
+            List<RutinaPdfDTO.DiaPdfDTO> dias = datos.getDias();
 
-            for (RutinaPdfDTO.DiaPdfDTO dia : datos.getDias()) {
-                if (diasEnPagina >= MAX_DIAS_POR_PAGINA) {
+            for (int i = 0; i < dias.size(); i++) {
+                if (i == DIAS_PAGINA_1) {
                     document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
-                    diasEnPagina = 0;
                 }
-
-                crearDia(document, dia, datos.getCantidadSemanas());
-                diasEnPagina++;
+                crearDia(document, dias.get(i), datos.getCantidadSemanas());
             }
 
             // 4. NOMBRE DEL ALUMNO EN EL MARGEN IZQUIERDO (solo primera página)
@@ -539,9 +537,8 @@ public class RutinaService {
                 }
             }
         }
-
+        table.setMarginBottom(5);
         document.add(table);
-        document.add(new Paragraph("").setMarginBottom(5));
     }
 
     private Cell celda(String texto) {
