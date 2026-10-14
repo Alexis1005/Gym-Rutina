@@ -28,17 +28,19 @@
 
         <tbody>
         <tr th:each="rutina : ${rutinas}">
-            <td th:text="${rutina.nombre}"></td>
+            <td>
+                <span th:text="${rutina.nombre}"></span>
+                <span th:if="${alumnosPorRutina.containsKey(rutina.id)}"
+                  th:text="'(' + ${alumnosPorRutina[rutina.id]} + ')'"></span>
+            </td>
             <td th:text="${rutina.cantidadSemanas}"></td>
             <td>
                 <a th:href="@{/rutinas/{id}(id=${rutina.id})}" class="btn btn-sm btn-info">
                     Ver
                 </a>
-
                 <a th:href="@{/rutinas/editar/{id}(id=${rutina.id})}" class="btn btn-sm btn-warning">
                     Editar
                 </a>
-
                 <a th:href="@{/rutinas/eliminar/{id}(id=${rutina.id})}"
                    class="btn btn-sm btn-danger"
                    onclick="return confirm('¿Seguro que querés eliminar esta rutina?');">

@@ -20,6 +20,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.ContentDisposition;
+import java.nio.charset.StandardCharsets;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -178,9 +180,20 @@ public class AlumnoController {
         try {
             byte[] pdfBytes = rutinaService.generarPdfRutina(alumnoId, rutinaId);
 
+            String nombreAlumno = alumnoService.obtenerPorId(alumnoId).getNombreApellido();
+            String nombreRutina = rutinaRepository.findById(rutinaId)
+                    .orElseThrow(() -> new IllegalArgumentException("Rutina no encontrada"))
+                    .getNombre();
+
+            // Quita los caracteres que no se permiten en nombres de archivo
+            String nombreArchivo = (nombreRutina + " (" + nombreAlumno + ").pdf")
+                    .replaceAll("[\\\\/:*?\"<>|]", "");
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "rutina.pdf");
+            headers.setContentDisposition(ContentDisposition.attachment()
+                    .filename(nombreArchivo, StandardCharsets.UTF_8)
+                    .build());
 
             return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
         } catch (IllegalArgumentException e) {

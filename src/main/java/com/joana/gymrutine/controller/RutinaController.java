@@ -131,6 +131,7 @@ public class RutinaController {
     public String listarRutinas(Model model) {
         List<Rutina> rutinas = rutinaRepository.findAll();
         model.addAttribute("rutinas", rutinas);
+        model.addAttribute("alumnosPorRutina", rutinaService.alumnosPorRutina());
         return "rutina/listar";
     }
 

@@ -335,6 +335,21 @@ public class RutinaService {
     }
 
     /**
+     * Devuelve, por cada rutina asignada, los nombres de los alumnos que la tienen.
+     * Ejemplo: { 5 -> "Vespa Alexis", 8 -> "Gómez Ana, Pérez Juan" }
+     * Las rutinas sin asignar no aparecen en el mapa.
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, String> alumnosPorRutina() {
+        return asignacionRutinaRepository.findAll().stream()
+                .collect(Collectors.groupingBy(
+                        a -> a.getRutina().getId(),
+                        Collectors.mapping(
+                                a -> a.getAlumno().getNombreApellido(),
+                                Collectors.joining(", "))));
+    }
+
+    /**
      * Crear header con logo, nombre alumno y fecha
      */
     private void crearHeader(Document document, RutinaPdfDTO datos) {
